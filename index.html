@@ -160,43 +160,35 @@ tbody tr:last-child td{border-bottom:none;}
 .c-stat{width:calc((66% - 64px)/7);}
 
 @media (max-width:640px){
-
-.header{
-flex-direction:column;
-align-items:flex-start;
-gap:12px;
-}
-
-.meta{
-text-align:left;
-white-space:normal;
-width:100%;
-}
-
-.brand img{
-width:60px;
-height:60px;
-}
-
-h1{
-white-space:normal;
-font-size:1.2rem;
-}
-
-thead th{
-font-size:0.62rem;
-padding:8px 4px;
-letter-spacing:0.08em;
-}
-
-td{
-font-size:0.72rem;
-padding:8px 4px;
-}
-
-.c-pos{width:40px;}
-.c-team{width:32%;padding-left:8px;}
-
+  .header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+  }
+  .meta{
+    text-align:left;
+    white-space:normal;
+    width:100%;
+  }
+  .brand img{
+    width:60px;
+    height:60px;
+  }
+  h1{
+    white-space:normal;
+    font-size:1.2rem;
+  }
+  thead th{
+    font-size:0.62rem;
+    padding:8px 4px;
+    letter-spacing:0.08em;
+  }
+  td{
+    font-size:0.72rem;
+    padding:8px 4px;
+  }
+  .c-pos{width:40px;}
+  .c-team{width:32%;padding-left:8px;}
 }
 </style>
 </head>
@@ -210,12 +202,13 @@ padding:8px 4px;
 <img src="logo.png" alt="Impulse Logo">
 <div>
 <h1>Impulse Overdrive</h1>
-<div class="subtitle">Live standings will be updated ASAP by GameFlame</div>
+<div class="subtitle">Live standings will be updated ASAP by GeeUnit</div>
 
 <div class="nav">
 <a class="active" href="index.html">Overdrive</a>
 <a href="catalyst.html">Catalyst</a>
 <a href="contenders.html">Contenders</a>
+<a href="hgtrophy.html">HG Trophy</a>
 </div>
 </div>
 </div>
@@ -249,7 +242,6 @@ Last updated: <strong id="last-updated">—</strong>
 </main>
 
 <script>
-
 const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc/export?format=csv&gid=829195735";
 
 function parseCsv(txt){
@@ -291,7 +283,6 @@ document.getElementById("last-updated").textContent=new Date().toLocaleString();
 }
 
 load();
-
 </script>
 
 </body>
