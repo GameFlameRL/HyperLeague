@@ -243,6 +243,7 @@ tbody tr:last-child td{border-bottom:none;}
 <script>
 const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc/export?format=csv&gid=934379579";
 const SEASON_CSV_URL="https://docs.google.com/spreadsheets/d/1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc/export?format=csv&gid=46702868";
+const LEAGUE="catalyst";
 function parseCsv(txt){
   const rows=txt.trim().replace(/\r/g,"").split("\n").map(r=>r.split(","));
   const[,...data]=rows;
@@ -257,9 +258,10 @@ function renderTable(teams){
   tbody.innerHTML="";
   teams.forEach((t,i)=>{
     const tr=document.createElement("tr");
+    const teamLink=`<a href="team.html?team=${encodeURIComponent(t.team)}&league=${LEAGUE}" style="color:inherit;text-decoration:none;display:block;width:100%;">${t.team}</a>`;
     tr.innerHTML=`
       <td>${t.pos||i+1}</td>
-      <td class="c-team">${t.team}</td>
+      <td class="c-team" style="cursor:pointer;">${teamLink}</td>
       <td>${t.played}</td>
       <td>${t.wins}</td>
       <td>${t.losses}</td>
