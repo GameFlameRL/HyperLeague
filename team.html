@@ -329,18 +329,6 @@ function renderFixtures(fixtures, teamName, colours) {
                    : f.result === "L" ? "result-l"
                    : f.result === "D" ? "result-d"
                    : "result-tbd";
-    const homeBg = colours[f.home.toLowerCase()] ? `background-color:${colours[f.home.toLowerCase()]};` : "";
-    const awayBg = colours[f.away.toLowerCase()] ? `background-color:${colours[f.away.toLowerCase()]};` : "";
-    const homeFw = f.home.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;" : "";
-    const awayFw = f.away.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;" : "";
-  tbody.innerHTML = fixtures.map(f => {
-    const scoreStr = f.played
-      ? `${f.homeScore} – ${f.awayScore}`
-      : "vs";
-    const resClass = f.result === "W" ? "result-w"
-                   : f.result === "L" ? "result-l"
-                   : f.result === "D" ? "result-d"
-                   : "result-tbd";
     const isHome = f.home.toLowerCase() === teamName.toLowerCase();
     const opponent = isHome ? f.away : f.home;
     const oppColour = colours[opponent.toLowerCase()] || "";
