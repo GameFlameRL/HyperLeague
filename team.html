@@ -64,14 +64,14 @@ h1{
   font-weight:900;
   letter-spacing:0.14em;
   text-transform:uppercase;
-  color:#fff;
+  color:#000;
   white-space:nowrap;
 }
 
 .subtitle{
   margin-top:6px;
   font-size:0.9rem;
-  color:#94a3b8;
+  color:#000;
 }
 
 .nav{
@@ -99,7 +99,7 @@ h1{
 .meta{
   text-align:right;
   font-size:0.95rem;
-  color:#94a3b8;
+  color:#000;
   line-height:1.55;
   white-space:nowrap;
 }
@@ -123,7 +123,7 @@ table{
 
 thead th{
   background:#1f2a3a;
-  color:#94a3b8;
+  color:#000;
   text-transform:uppercase;
   letter-spacing:0.14em;
   font-size:0.75rem;
@@ -134,7 +134,7 @@ thead th{
 
 th, td{
   text-align:center;
-  color:#e2e8f0;
+  color:#000;
   font-size:0.92rem;
   padding:12px 10px;
   border-right:1px solid rgba(0,0,0,0.35);
@@ -144,20 +144,20 @@ th:last-child, td:last-child{border-right:none;}
 tbody td{border-bottom:1px solid rgba(0,0,0,0.25);}
 tbody tr:last-child td{border-bottom:none;}
 
-.c-gw{width:60px; color:#64748b; font-size:0.8rem;}
+.c-gw{width:60px; color:#000; font-size:0.8rem;}
 .c-home{text-align:right; font-weight:700;}
-.c-score{width:80px; font-weight:900; font-size:1rem; color:#fff;}
+.c-score{width:80px; font-weight:900; font-size:1rem; color:#000;}
 .c-away{text-align:left; font-weight:700;}
 
 .result-w{ color:#4ade80; }
 .result-l{ color:#f87171; }
-.result-d{ color:#94a3b8; }
-.result-tbd{ color:#475569; }
+.result-d{ color:#000; }
+.result-tbd{ color:#000; }
 
 .loading{
   text-align:center;
   padding:32px;
-  color:#475569;
+  color:#000;
   font-size:0.9rem;
 }
 
@@ -294,22 +294,22 @@ function parseFixtures(grid, teamName) {
                       || away.toLowerCase() === teamName.toLowerCase();
         if (!involves) continue;
 
-        const played = homeScore !== "" && awayScore !== ""
-                    && homeScore.toLowerCase() !== "x"
-                    && awayScore.toLowerCase() !== "x";
+        const played = homeScore !== "" && awayScore !== "";
 
         let result = "TBD";
         if (played) {
-          const hs = parseInt(homeScore), as = parseInt(awayScore);
+          const hs = homeScore.toLowerCase() === "x" ? 0 : parseInt(homeScore);
+          const as = awayScore.toLowerCase() === "x" ? 0 : parseInt(awayScore);
           const isHome = home.toLowerCase() === teamName.toLowerCase();
           if (hs === as) result = "D";
           else if ((isHome && hs > as) || (!isHome && as > hs)) result = "W";
           else result = "L";
-        } else if (homeScore.toLowerCase() === "x") {
-          result = "TBD";
         }
 
-        fixtures.push({ gw: gwNum, home, homeScore, awayScore, away, result, played });
+        const displayHome = homeScore.toLowerCase() === "x" ? "0" : homeScore;
+        const displayAway = awayScore.toLowerCase() === "x" ? "0" : awayScore;
+
+        fixtures.push({ gw: gwNum, home, homeScore: displayHome, awayScore: displayAway, away, result, played });
       }
     }
   }
@@ -325,13 +325,13 @@ function renderFixtures(fixtures, teamName) {
   tbody.innerHTML = fixtures.map(f => {
     const scoreStr = f.played
       ? `${f.homeScore} – ${f.awayScore}`
-      : (f.homeScore === "x" ? "vs" : "vs");
+      : "vs";
     const resClass = f.result === "W" ? "result-w"
                    : f.result === "L" ? "result-l"
                    : f.result === "D" ? "result-d"
                    : "result-tbd";
-    const homeB = f.home.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;color:#fff;" : "";
-    const awayB = f.away.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;color:#fff;" : "";
+    const homeB = f.home.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;color:#000;" : "";
+    const awayB = f.away.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;color:#000;" : "";
     return `<tr>
       <td class="c-gw">${f.gw}</td>
       <td class="c-home" style="${homeB}">${f.home}</td>
