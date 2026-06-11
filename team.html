@@ -343,7 +343,8 @@ function renderFixtures(fixtures, teamName, colours) {
                    : "result-tbd";
     const isHome = f.home.toLowerCase() === teamName.toLowerCase();
     const opponent = isHome ? f.away : f.home;
-    const oppBg = colours[opponent.toLowerCase()] ? `background-color:${colours[opponent.toLowerCase()]};` : "";
+    const oppColour = colours[opponent.toLowerCase()] || "";
+    const oppBg = oppColour ? "background-color:" + oppColour + ";" : "";
     const venue = isHome ? "H" : "A";
     return `<tr>
       <td class="c-gw">${f.gw}</td>
