@@ -237,17 +237,15 @@ tbody tr:last-child td{border-bottom:none;}
 </thead>
 <tbody id="league-body"></tbody>
 </table>
-</div>
-
 </section>
 </main>
 
 <script>
 const SHEET_CSV_URL="https://docs.google.com/spreadsheets/d/1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc/export?format=csv&gid=629194466";
-
+const SEASON_CSV_URL="https://docs.google.com/spreadsheets/d/1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc/export?format=csv&gid=46702868";
 function parseCsv(txt){
   const rows=txt.trim().replace(/\r/g,"").split("\n").map(r=>r.split(","));
-  const[, ...data]=rows;
+  const[,...data]=rows;
   return data.filter(r=>r[1]).map(r=>({
     pos:r[0],team:r[1],played:r[2],wins:r[3],losses:r[4],
     mf:r[5],ma:r[6],md:r[7],pts:r[8],colour:r[9]
@@ -278,14 +276,9 @@ function renderTable(teams){
 
 async function load(){
   try{
-    const sRes=await fetch("https://docs.google.com/spreadsheets/d/1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc/export?format=csv&gid=46702868&_ts="+Date.now(),{cache:"no-store"});
+    const sRes=await fetch(SEASON_CSV_URL+"&_ts="+Date.now(),{cache:"no-store"});
     const sTxt=await sRes.text();
-    console.log("Season raw CSV:",sTxt);
-    const rows=sTxt.trim().replace(/
-/g,"").split("
-");
-    const season=rows[0].split(",")[0].replace(/"/g,"").trim();
-    console.log("Season parsed:",season);
+    const season=sTxt.trim().split(/\r?\n/)[0].split(",")[0].replace(/"/g,"").trim();
     if(season) document.getElementById("season-num").textContent=season;
   }catch(e){
     console.warn("Could not load season:",e);
@@ -293,7 +286,6 @@ async function load(){
   try{
     const res=await fetch(SHEET_CSV_URL+"&_ts="+Date.now(),{cache:"no-store"});
     const text=await res.text();
-    console.log("Standings raw CSV:",text.substring(0,200));
     renderTable(parseCsv(text));
     document.getElementById("last-updated").textContent=new Date().toLocaleString();
   }catch(e){
