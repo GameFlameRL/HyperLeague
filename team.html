@@ -222,9 +222,9 @@ const SHEET_ID = "1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc";
 const SEASON_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=46702868`;
 
 const LEAGUE_CONFIG = {
-  overdrive:   { gid: "876178219",  label: "Overdrive",   back: "index.html" },
-  catalyst:    { gid: "1457576231", label: "Catalyst",    back: "catalyst.html" },
-  polytechnic: { gid: "1607823597", label: "Polytechnic", back: "polytechnic.html" }
+  overdrive:   { gid: "876178219",  standingsGid: "829195735", label: "Overdrive",   back: "index.html" },
+  catalyst:    { gid: "1457576231", standingsGid: "934379579", label: "Catalyst",    back: "catalyst.html" },
+  polytechnic: { gid: "1607823597", standingsGid: "629194466", label: "Polytechnic", back: "polytechnic.html" }
 };
 
 // Sheet layout constants (1-based row/col as in spreadsheet)
@@ -316,7 +316,14 @@ function parseFixtures(grid, teamName) {
   return fixtures;
 }
 
-function renderFixtures(fixtures, teamName) {
+function colourSpan(name, teamName, colours) {
+  const bg = colours[name.toLowerCase()] || "";
+  const fw = name.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;" : "";
+  const bgStyle = bg ? `background-color:${bg};padding:3px 8px;border-radius:6px;` : "";
+  return `<span style="${fw}${bgStyle}">${name}</span>`;
+}
+
+function renderFixtures(fixtures, teamName, colours) {
   const tbody = document.getElementById("fixtures-body");
   if (!fixtures.length) {
     tbody.innerHTML = `<tr><td colspan="5" class="loading">No fixtures found for ${teamName}</td></tr>`;
@@ -330,13 +337,11 @@ function renderFixtures(fixtures, teamName) {
                    : f.result === "L" ? "result-l"
                    : f.result === "D" ? "result-d"
                    : "result-tbd";
-    const homeB = f.home.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;color:#000;" : "";
-    const awayB = f.away.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;color:#000;" : "";
     return `<tr>
       <td class="c-gw">${f.gw}</td>
-      <td class="c-home" style="${homeB}">${f.home}</td>
+      <td class="c-home">${colourSpan(f.home, teamName, colours)}</td>
       <td class="c-score">${scoreStr}</td>
-      <td class="c-away" style="${awayB}">${f.away}</td>
+      <td class="c-away">${colourSpan(f.away, teamName, colours)}</td>
       <td class="${resClass}"><strong>${f.result}</strong></td>
     </tr>`;
   }).join("");
@@ -364,12 +369,29 @@ async function load() {
 
   // Load fixtures
   try {
+    // Fetch standings for team colours
+    const colours = {};
+    try {
+      const cUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${config.standingsGid}&_ts=${Date.now()}`;
+      const cRes = await fetch(cUrl, {cache:"no-store"});
+      const cTxt = await cRes.text();
+      const cRows = cTxt.trim().replace(/\r/g,"").split("\n").slice(1);
+      cRows.forEach(row => {
+        const cols = row.split(",");
+        const name = (cols[1] || "").trim().toLowerCase();
+        const colour = (cols[9] || "").trim();
+        if (name && colour) colours[name] = colour;
+      });
+    } catch(e) {
+      console.warn("Could not load colours:", e);
+    }
+
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${config.gid}&_ts=${Date.now()}`;
     const res  = await fetch(url, {cache:"no-store"});
     const text = await res.text();
     const grid = csvToGrid(text);
     const fixtures = parseFixtures(grid, team);
-    renderFixtures(fixtures, team);
+    renderFixtures(fixtures, team, colours);
   } catch(e) {
     console.error("Could not load fixtures:", e);
     document.getElementById("fixtures-body").innerHTML =
