@@ -213,7 +213,7 @@ tbody tr:last-child td{border-bottom:none;}
 </div>
 
 <div class="meta">
-Season: <strong>3</strong><br>
+Season: <strong id="season-num">—</strong><br>
 Last updated: <strong id="last-updated">—</strong>
 </div>
 </div>
@@ -275,10 +275,15 @@ tbody.appendChild(tr);
 }
 
 async function load(){
-const res=await fetch(SHEET_CSV_URL+"&_ts="+Date.now(),{cache:"no-store"});
-const text=await res.text();
-renderTable(parseCsv(text));
-document.getElementById("last-updated").textContent=new Date().toLocaleString();
+  const sRes=await fetch("https://docs.google.com/spreadsheets/d/1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc/export?format=csv&gid=46702868&_ts="+Date.now(),{cache:"no-store"});
+  const sTxt=await sRes.text();
+  const season=sTxt.trim().split("
+")[1];
+  document.getElementById("season-num").textContent=season;
+  const res=await fetch(SHEET_CSV_URL+"&_ts="+Date.now(),{cache:"no-store"});
+  const text=await res.text();
+  renderTable(parseCsv(text));
+  document.getElementById("last-updated").textContent=new Date().toLocaleString();
 }
 
 load();
