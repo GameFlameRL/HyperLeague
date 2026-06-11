@@ -277,16 +277,25 @@ async function load(){
   try{
     const sRes=await fetch("https://docs.google.com/spreadsheets/d/1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc/export?format=csv&gid=46702868&_ts="+Date.now(),{cache:"no-store"});
     const sTxt=await sRes.text();
-    const season=sTxt.trim().split("
-")[0].split(",")[0].replace(/"/g,"").trim();
-    document.getElementById("season-num").textContent=season;
+    console.log("Season raw CSV:",sTxt);
+    const rows=sTxt.trim().replace(/
+/g,"").split("
+");
+    const season=rows[0].split(",")[0].replace(/"/g,"").trim();
+    console.log("Season parsed:",season);
+    if(season) document.getElementById("season-num").textContent=season;
   }catch(e){
     console.warn("Could not load season:",e);
   }
-  const res=await fetch(SHEET_CSV_URL+"&_ts="+Date.now(),{cache:"no-store"});
-  const text=await res.text();
-  renderTable(parseCsv(text));
-  document.getElementById("last-updated").textContent=new Date().toLocaleString();
+  try{
+    const res=await fetch(SHEET_CSV_URL+"&_ts="+Date.now(),{cache:"no-store"});
+    const text=await res.text();
+    console.log("Standings raw CSV:",text.substring(0,200));
+    renderTable(parseCsv(text));
+    document.getElementById("last-updated").textContent=new Date().toLocaleString();
+  }catch(e){
+    console.error("Could not load standings:",e);
+  }
 }
 
 load();
