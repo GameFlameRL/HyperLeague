@@ -356,9 +356,16 @@ function renderFixtures(fixtures, teamName, colours) {
 
 async function load() {
   const params = new URLSearchParams(window.location.search);
-  const team   = params.get("team") || "Unknown";
+  const team   = params.get("team") || "";
   const league = (params.get("league") || "overdrive").toLowerCase();
   const config = LEAGUE_CONFIG[league] || LEAGUE_CONFIG.overdrive;
+
+  if (!team) {
+    document.getElementById("team-title").textContent = "No team selected";
+    document.getElementById("fixtures-body").innerHTML =
+      `<tr><td colspan="5" class="loading">Please navigate here from a league standings page.</td></tr>`;
+    return;
+  }
 
   document.getElementById("team-title").textContent = team;
   document.getElementById("league-subtitle").textContent = config.label + " · Fixtures & Results";
