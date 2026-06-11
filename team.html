@@ -144,9 +144,9 @@ th:last-child, td:last-child{border-right:none;}
 tbody td{border-bottom:1px solid rgba(0,0,0,0.25);}
 tbody tr:last-child td{border-bottom:none;}
 
-.c-gw{width:60px; color:#000; font-size:0.8rem;}
+.c-gw{width:60px; color:#000;}
 .c-home{text-align:center; font-weight:700;}
-.c-score{width:80px; font-weight:900; font-size:1rem; color:#000;}
+.c-score{width:80px; font-weight:900; color:#000;}
 .c-away{text-align:center; font-weight:700;}
 
 .result-w{ color:#4ade80; }
@@ -202,9 +202,8 @@ tbody tr:last-child td{border-bottom:none;}
     <thead>
       <tr>
         <th class="c-gw">GW</th>
-        <th class="c-home">HOME</th>
+        <th colspan="2">OPPONENT</th>
         <th class="c-score">SCORE</th>
-        <th class="c-away">AWAY</th>
         <th style="width:48px;">RES</th>
       </tr>
     </thead>
@@ -319,7 +318,7 @@ function parseFixtures(grid, teamName) {
 function renderFixtures(fixtures, teamName, colours) {
   const tbody = document.getElementById("fixtures-body");
   if (!fixtures.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="loading">No fixtures found for ${teamName}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="loading">No fixtures found for ${teamName}</td></tr>`;
     return;
   }
   tbody.innerHTML = fixtures.map(f => {
@@ -334,11 +333,22 @@ function renderFixtures(fixtures, teamName, colours) {
     const awayBg = colours[f.away.toLowerCase()] ? `background-color:${colours[f.away.toLowerCase()]};` : "";
     const homeFw = f.home.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;" : "";
     const awayFw = f.away.toLowerCase() === teamName.toLowerCase() ? "font-weight:900;" : "";
+  tbody.innerHTML = fixtures.map(f => {
+    const scoreStr = f.played
+      ? `${f.homeScore} – ${f.awayScore}`
+      : "vs";
+    const resClass = f.result === "W" ? "result-w"
+                   : f.result === "L" ? "result-l"
+                   : f.result === "D" ? "result-d"
+                   : "result-tbd";
+    const isHome = f.home.toLowerCase() === teamName.toLowerCase();
+    const opponent = isHome ? f.away : f.home;
+    const oppBg = colours[opponent.toLowerCase()] ? `background-color:${colours[opponent.toLowerCase()]};` : "";
+    const venue = isHome ? "H" : "A";
     return `<tr>
       <td class="c-gw">${f.gw}</td>
-      <td class="c-home" style="${homeBg}${homeFw}">${f.home}</td>
+      <td class="c-home" colspan="2" style="${oppBg}font-weight:700;">${opponent}</td>
       <td class="c-score">${scoreStr}</td>
-      <td class="c-away" style="${awayBg}${awayFw}">${f.away}</td>
       <td class="${resClass}"><strong>${f.result}</strong></td>
     </tr>`;
   }).join("");
