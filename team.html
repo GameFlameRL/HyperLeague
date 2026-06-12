@@ -237,6 +237,21 @@ const SHEET_ID = "1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc";
 const SEASON_CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=46702868`;
 const PLAYERS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1229444923`;
 
+const RANK_COLOURS = {
+  "Bronze":   "#a06b15",
+  "Silver":   "#a5acb4",
+  "Gold":     "#f0a009",
+  "Platinum": "#1ac7f0",
+  "Diamond":  "#0556b9",
+  "C1":       "#9810e7",
+  "C2":       "#7e09dd",
+  "C3":       "#5905a1",
+  "GC1":      "#bb2222",
+  "GC2":      "#dd1a1a",
+  "GC3":      "#ff0000",
+  "SSL":      "#ff00a6",
+};
+
 const LEAGUE_CONFIG = {
   overdrive:   { gid: "876178219",  standingsGid: "829195735", label: "Overdrive",   back: "index.html" },
   catalyst:    { gid: "1457576231", standingsGid: "934379579", label: "Catalyst",    back: "catalyst.html" },
@@ -431,12 +446,13 @@ async function load() {
     if (players.length) {
       const teamColour = colours[team.toLowerCase()] || "";
       const bgStyle = teamColour ? "background-color:" + teamColour + ";" : "";
-      pbody.innerHTML = players.map(p =>
-        `<tr>
+      pbody.innerHTML = players.map(p => {
+        const rankBg = RANK_COLOURS[p.rank] ? "background-color:" + RANK_COLOURS[p.rank] + ";" : "";
+        return `<tr>
           <td style="text-align:center;${bgStyle}">${p.name}</td>
-          <td style="text-align:center;width:90px;font-weight:700;">${p.rank}</td>
-        </tr>`
-      ).join("");
+          <td style="text-align:center;width:90px;font-weight:700;${rankBg}">${p.rank}</td>
+        </tr>`;
+      }).join("");
     } else {
       pbody.innerHTML = `<tr><td class="loading">No players found.</td></tr>`;
     }
