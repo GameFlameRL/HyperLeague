@@ -219,6 +219,7 @@ tbody tr:last-child td{border-bottom:none;}
       <thead>
         <tr>
           <th style="text-align:center;">PLAYERS</th>
+          <th style="text-align:center;width:90px;">RANK</th>
         </tr>
       </thead>
       <tbody id="players-body">
@@ -425,13 +426,16 @@ async function load() {
     const players = pRows
       .map(r => r.split(","))
       .filter(r => r[0].trim().toLowerCase() === team.toLowerCase())
-      .map(r => r[1].trim());
+      .map(r => ({ name: r[1].trim(), rank: (r[2] || "").trim() }));
     const pbody = document.getElementById("players-body");
     if (players.length) {
       const teamColour = colours[team.toLowerCase()] || "";
       const bgStyle = teamColour ? "background-color:" + teamColour + ";" : "";
       pbody.innerHTML = players.map(p =>
-        `<tr><td style="text-align:center;${bgStyle}">${p}</td></tr>`
+        `<tr>
+          <td style="text-align:center;${bgStyle}">${p.name}</td>
+          <td style="text-align:center;width:90px;font-weight:700;">${p.rank}</td>
+        </tr>`
       ).join("");
     } else {
       pbody.innerHTML = `<tr><td class="loading">No players found.</td></tr>`;
