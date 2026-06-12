@@ -213,12 +213,28 @@ tbody tr:last-child td{border-bottom:none;}
   </table>
 </div>
 
+<div style="margin-top:16px;">
+  <div class="tableFrame">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left;padding-left:14px;">PLAYERS</th>
+        </tr>
+      </thead>
+      <tbody id="players-body">
+        <tr><td class="loading">Loading players…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 </section>
 </main>
 
 <script>
 const SHEET_ID = "1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc";
-const SEASON_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=46702868`;
+const SEASON_CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=46702868`;
+const PLAYERS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1229444923`;
 
 const LEAGUE_CONFIG = {
   overdrive:   { gid: "876178219",  standingsGid: "829195735", label: "Overdrive",   back: "index.html" },
@@ -399,6 +415,29 @@ async function load() {
     console.error("Could not load fixtures:", e);
     document.getElementById("fixtures-body").innerHTML =
       `<tr><td colspan="5" class="loading">Error loading fixtures.</td></tr>`;
+  }
+
+  // Load players
+  try {
+    const pRes = await fetch(PLAYERS_CSV_URL + "&_ts=" + Date.now(), {cache:"no-store"});
+    const pTxt = await pRes.text();
+    const pRows = pTxt.trim().replace(/\r/g,"").split("\n").slice(1);
+    const players = pRows
+      .map(r => r.split(","))
+      .filter(r => r[0].trim().toLowerCase() === team.toLowerCase())
+      .map(r => r[1].trim());
+    const pbody = document.getElementById("players-body");
+    if (players.length) {
+      pbody.innerHTML = players.map(p =>
+        `<tr><td style="text-align:left;padding-left:14px;">${p}</td></tr>`
+      ).join("");
+    } else {
+      pbody.innerHTML = `<tr><td class="loading">No players found.</td></tr>`;
+    }
+  } catch(e) {
+    console.error("Could not load players:", e);
+    document.getElementById("players-body").innerHTML =
+      `<tr><td class="loading">Error loading players.</td></tr>`;
   }
 }
 
