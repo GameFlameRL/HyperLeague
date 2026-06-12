@@ -204,7 +204,7 @@ tbody tr:last-child td{border-bottom:none;}
         <th class="c-gw">GW</th>
         <th colspan="2">OPPONENT</th>
         <th class="c-score">SCORE</th>
-        <th style="width:48px;">RES</th>
+        <th style="width:70px;white-space:nowrap;">RESULT</th>
       </tr>
     </thead>
     <tbody id="fixtures-body">
@@ -218,8 +218,8 @@ tbody tr:last-child td{border-bottom:none;}
     <table>
       <thead>
         <tr>
-          <th style="text-align:center;">PLAYERS</th>
-          <th style="text-align:center;width:90px;">PEAK RANK</th>
+          <th style="text-align:center;width:67%;">PLAYERS</th>
+          <th style="text-align:center;width:33%;white-space:nowrap;">PEAK RANK</th>
         </tr>
       </thead>
       <tbody id="players-body">
@@ -449,8 +449,8 @@ async function load() {
       pbody.innerHTML = players.map(p => {
         const rankBg = RANK_COLOURS[p.rank] ? "background-color:" + RANK_COLOURS[p.rank] + ";" : "";
         return `<tr>
-          <td style="text-align:center;${bgStyle}">${p.name}</td>
-          <td style="text-align:center;width:90px;font-weight:700;${rankBg}">${p.rank}</td>
+          <td style="text-align:center;font-weight:900;${bgStyle}">${p.name}</td>
+          <td style="text-align:center;font-weight:700;white-space:nowrap;padding:12px 16px;${rankBg}">${p.rank}</td>
         </tr>`;
       }).join("");
     } else {
