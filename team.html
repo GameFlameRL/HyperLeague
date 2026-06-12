@@ -387,9 +387,9 @@ async function load() {
   }
 
   // Load fixtures
+  const colours = {};
   try {
     // Fetch standings for team colours
-    const colours = {};
     try {
       const cUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${config.standingsGid}&_ts=${Date.now()}`;
       const cRes = await fetch(cUrl, {cache:"no-store"});
@@ -428,8 +428,10 @@ async function load() {
       .map(r => r[1].trim());
     const pbody = document.getElementById("players-body");
     if (players.length) {
+      const teamColour = colours[team.toLowerCase()] || "";
+      const bgStyle = teamColour ? "background-color:" + teamColour + ";" : "";
       pbody.innerHTML = players.map(p =>
-        `<tr><td style="text-align:left;padding-left:14px;">${p}</td></tr>`
+        `<tr><td style="text-align:left;padding-left:14px;${bgStyle}">${p}</td></tr>`
       ).join("");
     } else {
       pbody.innerHTML = `<tr><td class="loading">No players found.</td></tr>`;
