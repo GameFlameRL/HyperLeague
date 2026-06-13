@@ -439,9 +439,19 @@ async function load() {
     const pTxt = await pRes.text();
     const pRows = pTxt.trim().replace(/\r/g,"").split("\n").slice(1);
     const players = pRows
-      .map(r => r.split(","))
-      .filter(r => r[0].trim().toLowerCase() === team.toLowerCase())
-      .map(r => ({ name: r[1].trim(), rank: (r[2] || "").trim() }));
+      .map(r => {
+        // Parse CSV properly handling quoted fields
+        const cols = [];
+        let inQ = false, cell = "";
+        for (const ch of r + ",") {
+          if (ch === '"') { inQ = !inQ; }
+          else if (ch === "," && !inQ) { cols.push(cell.trim()); cell = ""; }
+          else { cell += ch; }
+        }
+        return cols;
+      })
+      .filter(r => r[0].toLowerCase() === team.toLowerCase())
+      .map(r => ({ name: r[1] || "", rank: (r[2] || "").trim() }));
     const pbody = document.getElementById("players-body");
     if (players.length) {
       const teamColour = colours[team.toLowerCase()] || "";
