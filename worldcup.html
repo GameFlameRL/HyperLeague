@@ -363,6 +363,8 @@ function getFlagStyle(team){
 function flagOverlay(){
   return `<span style="position:relative;z-index:1;background:rgba(0,0,0,0.45);padding:3px 8px;border-radius:4px;color:#fff;font-weight:900;">`; 
 }
+
+function parseCsv(txt){
   return txt.trim().replace(/\r/g,"").split("\n").map(row=>{
     const cells=[];let inQ=false,cell="";
     for(const ch of row+","){
