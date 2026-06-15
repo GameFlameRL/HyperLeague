@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>WC Team</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+:root{
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:18px;
+  background: radial-gradient(circle at top, #0f172a 0%, #020617 55%, #000 100%);
+  color:#000;
+}
+
+.frame{
+  width:100%;
+  max-width:760px;
+  border-radius:26px;
+  padding:16px;
+  background: linear-gradient(180deg, #334155 0%, #0b1220 100%);
+  box-shadow:0 24px 55px rgba(0,0,0,0.65);
+  border:2px solid rgba(255,255,255,0.05);
+}
+
+.card{
+  border-radius:22px;
+  padding:18px 18px 16px;
+  background: linear-gradient(180deg, #2b3a52 0%, #1b2537 100%);
+  border:1px solid rgba(255,255,255,0.06);
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.25);
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  margin-bottom:16px;
+}
+
+.brand{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+}
+
+.brand img{
+  width:78px;
+  height:78px;
+  object-fit:contain;
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,0.55));
+}
+
+h1{
+  font-size:1.55rem;
+  font-weight:900;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:#000;
+}
+
+.subtitle{
+  margin-top:6px;
+  font-size:0.9rem;
+  color:#000;
+  opacity:0.85;
+}
+
+.nav{
+  margin-top:10px;
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+.nav a{
+  text-decoration:none;
+  padding:4px 9px;
+  border-radius:999px;
+  font-size:0.72rem;
+  font-weight:800;
+  letter-spacing:0.03em;
+  background:#1e293b;
+  color:#cbd5e1;
+  border:1px solid rgba(255,255,255,0.15);
+  transition:0.15s ease;
+}
+
+.nav a:hover{ background:#334155; }
+
+.meta{
+  text-align:right;
+  font-size:0.95rem;
+  color:#000;
+  opacity:0.85;
+  line-height:1.55;
+  white-space:nowrap;
+}
+
+.tableFrame{
+  border-radius:18px;
+  overflow:hidden;
+  background:#1e2d42;
+  border:2px solid rgba(0,0,0,0.55);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 14px 28px rgba(0,0,0,0.45);
+  margin-top:16px;
+}
+
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  table-layout:fixed;
+}
+
+thead th{
+  background:#2a3a52;
+  color:#000;
+  text-transform:uppercase;
+  letter-spacing:0.14em;
+  font-size:0.75rem;
+  font-weight:900;
+  padding:12px 10px;
+  border-bottom:1px solid rgba(0,0,0,0.6);
+}
+
+th, td{
+  text-align:center;
+  color:#000;
+  font-size:0.92rem;
+  padding:12px 10px;
+  border-right:1px solid rgba(0,0,0,0.35);
+}
+
+th:last-child, td:last-child{border-right:none;}
+tbody td{border-bottom:1px solid rgba(0,0,0,0.25);}
+tbody tr:last-child td{border-bottom:none;}
+
+.loading{
+  text-align:center;
+  padding:32px;
+  color:#475569;
+  font-size:0.9rem;
+}
+</style>
+</head>
+
+<body>
+<main class="frame">
+<section class="card">
+
+<div class="header">
+  <div class="brand">
+    <img src="logo.png" alt="Hyper League Logo">
+    <div>
+      <h1 id="team-title">—</h1>
+      <div class="subtitle">World Cup · Player Roster</div>
+      <div class="nav">
+        <a href="index.html">Overdrive</a>
+        <a href="catalyst.html">Catalyst</a>
+        <a href="polytechnic.html">Polytechnic</a>
+        <a href="worldcup.html">World Cup</a>
+      </div>
+    </div>
+  </div>
+  <div class="meta">
+    <a href="worldcup.html" style="color:#3b82f6;text-decoration:none;font-weight:700;">← Back</a>
+  </div>
+</div>
+
+<div class="tableFrame">
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:center;width:67%;">PLAYERS</th>
+        <th style="text-align:center;width:33%;white-space:nowrap;">PEAK RANK</th>
+      </tr>
+    </thead>
+    <tbody id="players-body">
+      <tr><td colspan="2" class="loading">Loading players…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</section>
+</main>
+
+<script>
+const SHEET_ID    = "1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc";
+const PLAYERS_GID = "1229444923";
+
+const RANK_COLOURS = {
+  "Bronze":"#a06b15","Silver":"#a5acb4","Gold":"#f0a009",
+  "Platinum":"#1ac7f0","Diamond":"#0556b9","C1":"#9810e7",
+  "C2":"#7e09dd","C3":"#5905a1","GC1":"#bb2222",
+  "GC2":"#dd1a1a","GC3":"#ff0000","SSL":"#ff00a6"
+};
+
+async function load(){
+  const params = new URLSearchParams(window.location.search);
+  const team = params.get("team") || "";
+
+  if(!team){
+    document.getElementById("team-title").textContent = "No team selected";
+    return;
+  }
+
+  document.getElementById("team-title").textContent = decodeURIComponent(team);
+
+  try{
+    const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${PLAYERS_GID}&_ts=${Date.now()}`,{cache:"no-store"});
+    const txt = await res.text();
+    const rows = txt.trim().replace(/\r/g,"").split("\n").slice(1);
+
+    const players = rows.map(r=>{
+      const cols=[];let inQ=false,cell="";
+      for(const ch of r+","){
+        if(ch==='"'){inQ=!inQ;}
+        else if(ch===","&&!inQ){cols.push(cell.trim());cell="";}
+        else{cell+=ch;}
+      }
+      return cols;
+    }).filter(r=>r[0].toLowerCase()===decodeURIComponent(team).toLowerCase())
+      .map(r=>({name:r[1]||"",rank:(r[2]||"").trim()}));
+
+    const tbody = document.getElementById("players-body");
+    if(players.length){
+      tbody.innerHTML = players.map(p=>{
+        const rankBg = RANK_COLOURS[p.rank] ? "background-color:"+RANK_COLOURS[p.rank]+";" : "";
+        return `<tr>
+          <td style="text-align:center;font-weight:900;">${p.name}</td>
+          <td style="text-align:center;font-weight:700;white-space:nowrap;${rankBg}">${p.rank}</td>
+        </tr>`;
+      }).join("");
+    } else {
+      tbody.innerHTML = `<tr><td colspan="2" class="loading">No players found.</td></tr>`;
+    }
+  }catch(e){
+    console.error("Players error:",e);
+    document.getElementById("players-body").innerHTML =
+      `<tr><td colspan="2" class="loading">Error loading players.</td></tr>`;
+  }
+}
+
+load();
+</script>
+
+</body>
+</html>
