@@ -443,14 +443,12 @@ async function load(){
   try{
     const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GROUPS_GID}&_ts=${Date.now()}`,{cache:"no-store"});
     const txt=await res.text();
+    console.log("Groups CSV first 300 chars:", txt.substring(0,300));
     const grid=parseCsv(txt);
-    // Group A: rows 2-5, team in col A (1), stats B-H (2-8), colour I (9)
+    console.log("Grid row 2:", grid[1]);
     renderGroup(grid,2,1,"group-a");
-    // Group B: rows 9-12
     renderGroup(grid,9,1,"group-b");
-    // Group C: rows 16-19
     renderGroup(grid,16,1,"group-c");
-    // Group D: rows 23-26
     renderGroup(grid,23,1,"group-d");
   }catch(e){console.error("Groups error:",e);}
 
@@ -458,6 +456,7 @@ async function load(){
   try{
     const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${FIXTURES_GID}&_ts=${Date.now()}`,{cache:"no-store"});
     const txt=await res.text();
+    console.log("Fixtures CSV first 300 chars:", txt.substring(0,300));
     const grid=parseCsv(txt);
     // GW1 at B14 = row 14, col 2
     renderGW(grid,14,2,"gw1-body");
