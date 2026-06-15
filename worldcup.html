@@ -338,7 +338,31 @@ const RANK_COLOURS = {
   "GC2":"#dd1a1a","GC3":"#ff0000","SSL":"#ff00a6"
 };
 
-function parseCsv(txt){
+const FLAG_CODES = {
+  "england":"gb-eng","greece":"gr","portugal":"pt","sweden":"se",
+  "wales":"gb-wls","poland":"pl","spain":"es","albania":"al",
+  "morocco":"ma","scotland":"gb-sct","brazil":"br","germany":"de",
+  "france":"fr","ireland":"ie","saudi":"sa","saudi arabia":"sa",
+  "netherlands":"nl","usa":"us","italy":"it","argentina":"ar",
+  "japan":"jp","australia":"au","mexico":"mx","nigeria":"ng",
+  "senegal":"sn","denmark":"dk","croatia":"hr","belgium":"be",
+  "switzerland":"ch","uruguay":"uy","colombia":"co","peru":"pe",
+  "ecuador":"ec","ghana":"gh","cameroon":"cm","south korea":"kr",
+  "iran":"ir","qatar":"qa","canada":"ca","tunisia":"tn",
+  "costa rica":"cr","serbia":"rs","turkey":"tr","ukraine":"ua",
+  "austria":"at","czech republic":"cz","hungary":"hu","romania":"ro",
+  "slovakia":"sk","norway":"no","finland":"fi","russia":"ru",
+};
+
+function getFlagStyle(team){
+  const code = FLAG_CODES[team.toLowerCase()];
+  if(!code) return "";
+  return `background-image:url('https://flagcdn.com/w80/${code}.png');background-size:cover;background-position:center;background-repeat:no-repeat;position:relative;`;
+}
+
+function flagOverlay(){
+  return `<span style="position:relative;z-index:1;background:rgba(0,0,0,0.45);padding:3px 8px;border-radius:4px;color:#fff;font-weight:900;">`; 
+}
   return txt.trim().replace(/\r/g,"").split("\n").map(row=>{
     const cells=[];let inQ=false,cell="";
     for(const ch of row+","){
@@ -374,8 +398,9 @@ function renderGroup(grid, startRow, startCol, tbodyId){
   }
   tbody.innerHTML=rows.map(r=>{
     const bg=r.colour?`background-color:${r.colour};`:"";
+    const flagStyle=getFlagStyle(r.team);
     return `<tr>
-      <td class="c-team" style="${bg}" onclick="openTeam('${encodeURIComponent(r.team)}')">${r.team}</td>
+      <td class="c-team" style="${flagStyle}" onclick="openTeam('${encodeURIComponent(r.team)}')">${flagOverlay()}${r.team}</span></td>
       <td class="c-stat" style="${bg}">${r.p}</td>
       <td class="c-stat" style="${bg}">${r.w}</td>
       <td class="c-stat" style="${bg}">${r.l}</td>
