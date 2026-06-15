@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>World Cup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+:root{
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:18px;
+  background: radial-gradient(circle at top, #0f172a 0%, #020617 55%, #000 100%);
+  color:#000;
+}
+
+.frame{
+  width:100%;
+  max-width:960px;
+  border-radius:26px;
+  padding:16px;
+  background: linear-gradient(180deg, #334155 0%, #0b1220 100%);
+  box-shadow:0 24px 55px rgba(0,0,0,0.65);
+  border:2px solid rgba(255,255,255,0.05);
+}
+
+.card{
+  border-radius:22px;
+  padding:18px 18px 16px;
+  background: linear-gradient(180deg, #2b3a52 0%, #1b2537 100%);
+  border:1px solid rgba(255,255,255,0.06);
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.25);
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  margin-bottom:16px;
+}
+
+.brand{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+}
+
+.brand img{
+  width:78px;
+  height:78px;
+  object-fit:contain;
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,0.55));
+}
+
+h1{
+  font-size:1.55rem;
+  font-weight:900;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:#000;
+  white-space:nowrap;
+}
+
+.subtitle{
+  margin-top:6px;
+  font-size:0.9rem;
+  color:#000;
+  opacity:0.85;
+}
+
+.nav{
+  margin-top:10px;
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+.nav a{
+  text-decoration:none;
+  padding:4px 9px;
+  border-radius:999px;
+  font-size:0.72rem;
+  font-weight:800;
+  letter-spacing:0.03em;
+  background:#1e293b;
+  color:#cbd5e1;
+  border:1px solid rgba(255,255,255,0.15);
+  transition:0.15s ease;
+}
+
+.nav a:hover{ background:#334155; }
+.nav a.active{
+  background:#3b82f6;
+  color:#0b1220;
+  border-color:#60a5fa;
+}
+
+.meta{
+  text-align:right;
+  font-size:0.95rem;
+  color:#000;
+  opacity:0.85;
+  line-height:1.55;
+  white-space:nowrap;
+}
+
+.groups-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+
+.tableFrame{
+  border-radius:18px;
+  overflow:hidden;
+  background:#1e2d42;
+  border:2px solid rgba(0,0,0,0.55);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 14px 28px rgba(0,0,0,0.45);
+}
+
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  table-layout:fixed;
+}
+
+thead th{
+  background:#2a3a52;
+  color:#000;
+  text-transform:uppercase;
+  letter-spacing:0.14em;
+  font-size:0.75rem;
+  font-weight:900;
+  padding:12px 10px;
+  border-bottom:1px solid rgba(0,0,0,0.6);
+}
+
+th, td{
+  text-align:center;
+  color:#000;
+  font-size:0.92rem;
+  padding:12px 10px;
+  border-right:1px solid rgba(0,0,0,0.35);
+}
+
+th:last-child, td:last-child{border-right:none;}
+tbody td{border-bottom:1px solid rgba(0,0,0,0.25);}
+tbody tr:last-child td{border-bottom:none;}
+
+.c-team{text-align:left;font-weight:900;padding-left:14px;cursor:pointer;}
+.c-team:hover{text-decoration:underline;}
+.c-stat{width:36px;}
+.c-pts{width:40px;}
+
+.section-label{
+  font-size:0.75rem;
+  font-weight:900;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:#94a3b8;
+  margin:16px 0 8px;
+}
+
+.fixtures-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:16px;
+}
+
+.gw-label{
+  background:#2a3a52;
+  color:#000;
+  text-transform:uppercase;
+  letter-spacing:0.14em;
+  font-size:0.75rem;
+  font-weight:900;
+  padding:12px 10px;
+  border-bottom:1px solid rgba(0,0,0,0.6);
+  text-align:center;
+}
+
+.c-home{text-align:right;font-weight:700;}
+.c-score{width:70px;font-weight:900;}
+.c-away{text-align:left;font-weight:700;}
+
+.loading{
+  text-align:center;
+  padding:24px;
+  color:#475569;
+  font-size:0.9rem;
+}
+
+@media(max-width:640px){
+  .groups-grid{ grid-template-columns:1fr; }
+  .fixtures-grid{ grid-template-columns:1fr; }
+  .header{ flex-direction:column; align-items:flex-start; gap:12px; }
+  .meta{ text-align:left; white-space:normal; width:100%; }
+  h1{ font-size:1.2rem; }
+}
+</style>
+</head>
+
+<body>
+<main class="frame">
+<section class="card">
+
+<div class="header">
+  <div class="brand">
+    <img src="logo.png" alt="Hyper League Logo">
+    <div>
+      <h1>World Cup</h1>
+      <div class="subtitle">Live standings will be updated ASAP by GeeUnit</div>
+      <div class="nav">
+        <a href="index.html">Overdrive</a>
+        <a href="catalyst.html">Catalyst</a>
+        <a href="polytechnic.html">Polytechnic</a>
+        <a class="active" href="worldcup.html">World Cup</a>
+      </div>
+    </div>
+  </div>
+  <div class="meta">
+    Last updated: <strong id="last-updated">—</strong>
+  </div>
+</div>
+
+<!-- Groups -->
+<div class="section-label">Group Stage</div>
+<div class="groups-grid">
+  <div class="tableFrame">
+    <table>
+      <thead><tr>
+        <th class="c-team">GROUP A</th>
+        <th class="c-stat">P</th>
+        <th class="c-stat">W</th>
+        <th class="c-stat">L</th>
+        <th class="c-stat">GF</th>
+        <th class="c-stat">GA</th>
+        <th class="c-stat">GD</th>
+        <th class="c-pts">PTS</th>
+      </tr></thead>
+      <tbody id="group-a"></tbody>
+    </table>
+  </div>
+  <div class="tableFrame">
+    <table>
+      <thead><tr>
+        <th class="c-team">GROUP B</th>
+        <th class="c-stat">P</th>
+        <th class="c-stat">W</th>
+        <th class="c-stat">L</th>
+        <th class="c-stat">GF</th>
+        <th class="c-stat">GA</th>
+        <th class="c-stat">GD</th>
+        <th class="c-pts">PTS</th>
+      </tr></thead>
+      <tbody id="group-b"></tbody>
+    </table>
+  </div>
+  <div class="tableFrame">
+    <table>
+      <thead><tr>
+        <th class="c-team">GROUP C</th>
+        <th class="c-stat">P</th>
+        <th class="c-stat">W</th>
+        <th class="c-stat">L</th>
+        <th class="c-stat">GF</th>
+        <th class="c-stat">GA</th>
+        <th class="c-stat">GD</th>
+        <th class="c-pts">PTS</th>
+      </tr></thead>
+      <tbody id="group-c"></tbody>
+    </table>
+  </div>
+  <div class="tableFrame">
+    <table>
+      <thead><tr>
+        <th class="c-team">GROUP D</th>
+        <th class="c-stat">P</th>
+        <th class="c-stat">W</th>
+        <th class="c-stat">L</th>
+        <th class="c-stat">GF</th>
+        <th class="c-stat">GA</th>
+        <th class="c-stat">GD</th>
+        <th class="c-pts">PTS</th>
+      </tr></thead>
+      <tbody id="group-d"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Fixtures -->
+<div class="section-label">Fixtures & Results</div>
+<div class="fixtures-grid">
+  <div class="tableFrame">
+    <div class="gw-label">Gameweek 1</div>
+    <table>
+      <tbody id="gw1-body"><tr><td colspan="3" class="loading">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="tableFrame">
+    <div class="gw-label">Gameweek 2</div>
+    <table>
+      <tbody id="gw2-body"><tr><td colspan="3" class="loading">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="tableFrame">
+    <div class="gw-label">Gameweek 3</div>
+    <table>
+      <tbody id="gw3-body"><tr><td colspan="3" class="loading">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+</section>
+</main>
+
+<script>
+const SHEET_ID = "1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc";
+const GROUPS_GID   = "1035273448";
+const FIXTURES_GID = "1681527887";
+const PLAYERS_GID  = "1229444923";
+
+const RANK_COLOURS = {
+  "Bronze":"#a06b15","Silver":"#a5acb4","Gold":"#f0a009",
+  "Platinum":"#1ac7f0","Diamond":"#0556b9","C1":"#9810e7",
+  "C2":"#7e09dd","C3":"#5905a1","GC1":"#bb2222",
+  "GC2":"#dd1a1a","GC3":"#ff0000","SSL":"#ff00a6"
+};
+
+function parseCsv(txt){
+  return txt.trim().replace(/\r/g,"").split("\n").map(row=>{
+    const cells=[];let inQ=false,cell="";
+    for(const ch of row+","){
+      if(ch==='"'){inQ=!inQ;}
+      else if(ch===","&&!inQ){cells.push(cell.trim());cell="";}
+      else{cell+=ch;}
+    }
+    return cells;
+  });
+}
+
+function getCell(grid,row1,col1){
+  const r=grid[row1-1];
+  if(!r)return"";
+  return(r[col1-1]||"").trim();
+}
+
+function renderGroup(grid, startRow, startCol, tbodyId){
+  const tbody=document.getElementById(tbodyId);
+  const rows=[];
+  for(let i=0;i<4;i++){
+    const team=getCell(grid,startRow+i,startCol);
+    if(!team)continue;
+    const p  =getCell(grid,startRow+i,startCol+1)||"0";
+    const w  =getCell(grid,startRow+i,startCol+2)||"0";
+    const l  =getCell(grid,startRow+i,startCol+3)||"0";
+    const gf =getCell(grid,startRow+i,startCol+4)||"0";
+    const ga =getCell(grid,startRow+i,startCol+5)||"0";
+    const gd =getCell(grid,startRow+i,startCol+6)||"0";
+    const pts=getCell(grid,startRow+i,startCol+7)||"0";
+    const colour=getCell(grid,startRow+i,startCol+8)||"";
+    rows.push({team,p,w,l,gf,ga,gd,pts,colour});
+  }
+  tbody.innerHTML=rows.map(r=>{
+    const bg=r.colour?`background-color:${r.colour};`:"";
+    return `<tr>
+      <td class="c-team" style="${bg}" onclick="openTeam('${encodeURIComponent(r.team)}')">${r.team}</td>
+      <td class="c-stat" style="${bg}">${r.p}</td>
+      <td class="c-stat" style="${bg}">${r.w}</td>
+      <td class="c-stat" style="${bg}">${r.l}</td>
+      <td class="c-stat" style="${bg}">${r.gf}</td>
+      <td class="c-stat" style="${bg}">${r.ga}</td>
+      <td class="c-stat" style="${bg}">${r.gd}</td>
+      <td class="c-pts" style="${bg}"><strong>${r.pts}</strong></td>
+    </tr>`;
+  }).join("");
+}
+
+function renderGW(grid, gwRow, gwCol, tbodyId){
+  const tbody=document.getElementById(tbodyId);
+  const rows=[];
+  for(let i=1;i<=8;i++){
+    const home=getCell(grid,gwRow+i,gwCol);
+    const hs=getCell(grid,gwRow+i,gwCol+1);
+    const as=getCell(grid,gwRow+i,gwCol+2);
+    const away=getCell(grid,gwRow+i,gwCol+3);
+    if(!home&&!away)continue;
+    const played=hs!==""&&as!==""&&hs.toLowerCase()!=="x"||hs==="x";
+    const hsD=hs.toLowerCase()==="x"?"0":hs;
+    const asD=as.toLowerCase()==="x"?"0":as;
+    const score=(hs!==""&&as!=="")? `${hsD} – ${asD}`:"vs";
+    rows.push({home,away,score});
+  }
+  tbody.innerHTML=rows.map(r=>`<tr>
+    <td class="c-home">${r.home}</td>
+    <td class="c-score">${r.score}</td>
+    <td class="c-away">${r.away}</td>
+  </tr>`).join("");
+}
+
+function openTeam(encodedTeam){
+  window.location.href="wcteam.html?team="+encodedTeam;
+}
+
+async function load(){
+  // Load groups
+  try{
+    const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GROUPS_GID}&_ts=${Date.now()}`,{cache:"no-store"});
+    const txt=await res.text();
+    const grid=parseCsv(txt);
+    // Group A: rows 2-5, team in col A (1), stats B-H (2-8), colour I (9)
+    renderGroup(grid,2,1,"group-a");
+    // Group B: rows 9-12
+    renderGroup(grid,9,1,"group-b");
+    // Group C: rows 16-19
+    renderGroup(grid,16,1,"group-c");
+    // Group D: rows 23-26
+    renderGroup(grid,23,1,"group-d");
+  }catch(e){console.error("Groups error:",e);}
+
+  // Load fixtures
+  try{
+    const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${FIXTURES_GID}&_ts=${Date.now()}`,{cache:"no-store"});
+    const txt=await res.text();
+    const grid=parseCsv(txt);
+    // GW1 at B14 = row 14, col 2
+    renderGW(grid,14,2,"gw1-body");
+    // GW2 at G14 = row 14, col 7
+    renderGW(grid,14,7,"gw2-body");
+    // GW3 at L14 = row 14, col 12
+    renderGW(grid,14,12,"gw3-body");
+  }catch(e){console.error("Fixtures error:",e);}
+
+  document.getElementById("last-updated").textContent=new Date().toLocaleString();
+}
+
+load();
+</script>
+
+</body>
+</html>
