@@ -211,7 +211,7 @@ tbody tr:last-child td{border-bottom:none;}
 
 .bk-bracket{
   display:grid;
-  grid-template-columns:1fr 40px 1fr 40px 1fr 40px 1fr;
+  grid-template-columns:1fr 1fr 1fr 1fr;
   align-items:stretch;
   min-width:700px;
   padding:16px 0;
@@ -381,17 +381,14 @@ tbody tr:last-child td{border-bottom:none;}
       <div class="bk-round-label">Round of 16</div>
       <div class="bk-matches" id="bk-r16-matches"></div>
     </div>
-    <svg class="bk-svg-connector" id="bk-conn-r16" preserveAspectRatio="none"></svg>
     <div class="bk-round">
       <div class="bk-round-label">Quarter Finals</div>
       <div class="bk-matches" id="bk-qf-matches"></div>
     </div>
-    <svg class="bk-svg-connector" id="bk-conn-qf" preserveAspectRatio="none"></svg>
     <div class="bk-round">
       <div class="bk-round-label">Semi Finals</div>
       <div class="bk-matches" id="bk-sf-matches"></div>
     </div>
-    <svg class="bk-svg-connector" id="bk-conn-sf" preserveAspectRatio="none"></svg>
     <div class="bk-round">
       <div class="bk-round-label">Grand Final</div>
       <div class="bk-matches" id="bk-f-matches"></div>
@@ -633,90 +630,10 @@ async function loadBracket(){
     fin.appendChild(finGrp);
 
     // Draw SVG connectors after DOM is ready
-    requestAnimationFrame(() => {
-      drawConnectors();
-      // Redraw on resize
-      window.addEventListener("resize", drawConnectors);
-    });
 
   }catch(e){ console.error("Bracket error:",e); }
 }
 
-function drawConnectors(){
-  const bracket = document.getElementById("bk-bracket");
-  const bRect = bracket.getBoundingClientRect();
-
-  function connectOneToOne(fromGroups, toGroups, svgId){
-    const svg = document.getElementById(svgId);
-    const sRect = svg.getBoundingClientRect();
-    const h = sRect.height;
-    svg.setAttribute("viewBox", `0 0 40 ${h}`);
-    svg.setAttribute("width", "40");
-    svg.setAttribute("height", h);
-    let paths = "";
-    fromGroups.forEach((from, i) => {
-      const to = toGroups[i];
-      if(!from||!to) return;
-      const y1 = getMid(from) - sRect.top;
-      const y2 = getMid(to)   - sRect.top;
-      paths += `<path d="M0,${y1} H20 V${y2} H40" fill="none" stroke="#334155" stroke-width="2"/>`;
-    });
-    svg.innerHTML = paths;
-  }
-
-  function getMid(el){
-    const r = el.getBoundingClientRect();
-    return r.top + r.height/2;
-  }
-
-  function connectGroups(fromGroups, toGroups, svgId){
-    const svg = document.getElementById(svgId);
-    const sRect = svg.getBoundingClientRect();
-    const h = sRect.height;
-    svg.setAttribute("viewBox", `0 0 40 ${h}`);
-    svg.setAttribute("width", "40");
-    svg.setAttribute("height", h);
-    let paths = "";
-
-    const pairs = fromGroups.length / 2;
-    for(let i = 0; i < pairs; i++){
-      const g1 = fromGroups[i*2];
-      const g2 = fromGroups[i*2+1];
-      const to = toGroups[i];
-      if(!g1||!g2||!to) continue;
-
-      const y1   = getMid(g1) - sRect.top;
-      const y2   = getMid(g2) - sRect.top;
-      const yMid = (y1+y2)/2;
-      const yTo  = getMid(to) - sRect.top;
-
-      paths += `<path d="M0,${y1} H20 V${yMid}" fill="none" stroke="#334155" stroke-width="2"/>`;
-      paths += `<path d="M0,${y2} H20 V${yMid}" fill="none" stroke="#334155" stroke-width="2"/>`;
-      paths += `<path d="M20,${yMid} V${yTo} H40" fill="none" stroke="#334155" stroke-width="2"/>`;
-    }
-    svg.innerHTML = paths;
-  }
-
-  const r16Groups = Array.from(document.querySelectorAll("#bk-r16-matches .bk-match-group"));
-  // Sort by vertical position to ensure correct pairing
-  r16Groups.sort((a,b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-  // Use QF half-containers as targets so connectors point to middle of each fixture pair
-  const qfHalves = Array.from(document.querySelectorAll("#bk-qf-matches > div[style]")).filter(el => el.style.flex === "1 1 0%");
-  const qfGroups = qfHalves.length === 2 ? qfHalves : Array.from(document.querySelectorAll("#bk-qf-matches .bk-match-group"));
-  qfGroups.sort((a,b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-  const sfGroups  = Array.from(document.querySelectorAll("#bk-sf-matches .bk-match-group"));
-  const fGroups   = Array.from(document.querySelectorAll("#bk-f-matches .bk-match-group"));
-
-  // R16: pair [0,1]→QF[0], [2,3]→QF[1], [4,5]→QF[2], [6,7]→QF[3]
-  // but we only have 4 R16 matches so: [0,1]→QF[0], [2,3]→QF[1]
-  // then QF[0,1]→SF[0], QF[2,3]→SF[1], SF[0,1]→Final[0]
-  // R16 → QF: pair R16 matches
-  connectGroups(r16Groups, qfGroups, "bk-conn-r16");
-  // QF → SF: pair QF matches
-  connectGroups(qfGroups, sfGroups, "bk-conn-qf");
-  // SF → Final: pair SF matches
-  connectGroups(sfGroups, fGroups,  "bk-conn-sf");
-}
 
 load();
 loadBracket();
