@@ -540,15 +540,19 @@ function renderMatch(t1, s1, s2, t2){
   const played = s1 !== "" && s2 !== "";
   const hs = parseInt(s1) || 0;
   const as = parseInt(s2) || 0;
-  const t1win = played && hs > as;
-  const t2win = played && as > hs;
-  const t1cls = !t1 ? "bk-team empty" : t1win ? "bk-team winner" : "bk-team";
-  const t2cls = !t2 ? "bk-team empty" : t2win ? "bk-team winner" : "bk-team";
-  const t1score = played ? `<span class="bk-score">${s1}</span>` : "";
-  const t2score = played ? `<span class="bk-score">${s2}</span>` : "";
+  const t1bye = t1.toUpperCase() === "BYE";
+  const t2bye = t2.toUpperCase() === "BYE";
+  const t1win = played && hs > as || t2bye;
+  const t2win = played && as > hs || t1bye;
+  const t1cls = !t1 ? "bk-team empty" : t1bye ? "bk-team empty" : t1win ? "bk-team winner" : "bk-team";
+  const t2cls = !t2 ? "bk-team empty" : t2bye ? "bk-team empty" : t2win ? "bk-team winner" : "bk-team";
+  const t1score = played && !t1bye && !t2bye ? `<span class="bk-score">${s1}</span>` : "";
+  const t2score = played && !t1bye && !t2bye ? `<span class="bk-score">${s2}</span>` : "";
+  const t1label = t1bye ? "BYE" : (t1||"TBD");
+  const t2label = t2bye ? "BYE" : (t2||"TBD");
   return `<div class="bk-match">
-    <div class="${t1cls}">${t1||"TBD"}${t1score}</div>
-    <div class="${t2cls}">${t2||"TBD"}${t2score}</div>
+    <div class="${t1cls}">${t1label}${t1score}</div>
+    <div class="${t2cls}">${t2label}${t2score}</div>
   </div>`;
 }
 
@@ -574,55 +578,43 @@ async function loadBracket(){
     const sf  = document.getElementById("bk-sf-matches");
     const fin = document.getElementById("bk-f-matches");
 
-    // R16 - 4 matches split into 2 visual halves with a spacer between
-    const r16Top = document.createElement("div");
-    r16Top.style.cssText = "display:flex;flex-direction:column;flex:1;";
-    const r16Bot = document.createElement("div");
-    r16Bot.style.cssText = "display:flex;flex-direction:column;flex:1;";
-    const r16Spacer = document.createElement("div");
-    r16Spacer.style.cssText = "flex:0 0 16px;";
-    [1,2].forEach(i => {
-      const grp = document.createElement("div");
-      grp.className = "bk-match-group";
-      const m = rounds.R16[i] || {};
-      grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
-      r16Top.appendChild(grp);
+    // R16 - 8 matches in 4 pairs of 2, with spacers between pairs
+    [[1,2],[3,4],[5,6],[7,8]].forEach((pair, pi) => {
+      const half = document.createElement("div");
+      half.style.cssText = "display:flex;flex-direction:column;flex:1;";
+      pair.forEach(i => {
+        const grp = document.createElement("div");
+        grp.className = "bk-match-group";
+        const m = rounds.R16[i] || {};
+        grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+        half.appendChild(grp);
+      });
+      r16.appendChild(half);
+      if(pi < 3){
+        const spacer = document.createElement("div");
+        spacer.style.cssText = "flex:0 0 8px;";
+        r16.appendChild(spacer);
+      }
     });
-    [3,4].forEach(i => {
-      const grp = document.createElement("div");
-      grp.className = "bk-match-group";
-      const m = rounds.R16[i] || {};
-      grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
-      r16Bot.appendChild(grp);
-    });
-    r16.appendChild(r16Top);
-    r16.appendChild(r16Spacer);
-    r16.appendChild(r16Bot);
 
-    // QF - 4 matches split into 2 halves with a spacer
-    const qfTop = document.createElement("div");
-    qfTop.style.cssText = "display:flex;flex-direction:column;flex:1;";
-    const qfBot = document.createElement("div");
-    qfBot.style.cssText = "display:flex;flex-direction:column;flex:1;";
-    const qfSpacer = document.createElement("div");
-    qfSpacer.style.cssText = "flex:0 0 16px;";
-    [1,2].forEach(i => {
-      const grp = document.createElement("div");
-      grp.className = "bk-match-group";
-      const m = rounds.QF[i] || {};
-      grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
-      qfTop.appendChild(grp);
+    // QF - 4 matches in 2 pairs with spacer
+    [[1,2],[3,4]].forEach((pair, pi) => {
+      const half = document.createElement("div");
+      half.style.cssText = "display:flex;flex-direction:column;flex:1;";
+      pair.forEach(i => {
+        const grp = document.createElement("div");
+        grp.className = "bk-match-group";
+        const m = rounds.QF[i] || {};
+        grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+        half.appendChild(grp);
+      });
+      qf.appendChild(half);
+      if(pi < 1){
+        const spacer = document.createElement("div");
+        spacer.style.cssText = "flex:0 0 8px;";
+        qf.appendChild(spacer);
+      }
     });
-    [3,4].forEach(i => {
-      const grp = document.createElement("div");
-      grp.className = "bk-match-group";
-      const m = rounds.QF[i] || {};
-      grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
-      qfBot.appendChild(grp);
-    });
-    qf.appendChild(qfTop);
-    qf.appendChild(qfSpacer);
-    qf.appendChild(qfBot);
 
     // SF - 2 individual match groups
     [1,2].forEach(i => {
