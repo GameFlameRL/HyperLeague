@@ -284,7 +284,6 @@ tbody tr:last-child td{border-bottom:none;}
   display:flex;
   flex-direction:column;
   flex:1;
-  justify-content:center;
   position:relative;
 }
 .bk-connector-pair::before{
@@ -604,16 +603,16 @@ async function loadBracket(){
       r16.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
     });
 
-    // R16 connectors - 4 pairs
+    // R16 connectors - 2 pairs (each pair covers 2 matches)
     const connR16 = document.getElementById("bk-conn-r16");
-    for(let i=0;i<4;i++) connR16.innerHTML += '<div class="bk-connector-pair"></div>';
+    for(let i=0;i<2;i++) connR16.innerHTML += '<div class="bk-connector-pair"></div>';
 
     [1,2,3,4].forEach(i => {
       const m = rounds.QF[i] || {};
       qf.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
     });
 
-    // QF connectors - 2 pairs
+    // QF connectors - 2 pairs (each pair covers 2 matches)
     const connQF = document.getElementById("bk-conn-qf");
     for(let i=0;i<2;i++) connQF.innerHTML += '<div class="bk-connector-pair"></div>';
 
