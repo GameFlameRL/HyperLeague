@@ -237,7 +237,7 @@ tbody tr:last-child td{border-bottom:none;}
   flex:1;
   justify-content:space-around;
   padding:0 8px;
-  gap:8px;
+  gap:16px;
 }
 .bk-match{
   display:flex;
@@ -598,12 +598,17 @@ async function loadBracket(){
     const sf  = document.getElementById("bk-sf-matches");
     const fin = document.getElementById("bk-f-matches");
 
-    [1,2,3,4].forEach(i => {
-      const m = rounds.R16[i] || {};
-      r16.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+    // R16: group matches into pairs with a gap between pairs
+    [[1,2],[3,4]].forEach(pair => {
+      r16.innerHTML += '<div style="display:flex;flex-direction:column;gap:2px;flex:1;">';
+      pair.forEach(i => {
+        const m = rounds.R16[i] || {};
+        r16.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+      });
+      r16.innerHTML += '</div>';
     });
 
-    // R16 connectors - 2 pairs (each pair covers 2 matches)
+    // R16 connectors - 2 pairs
     const connR16 = document.getElementById("bk-conn-r16");
     for(let i=0;i<2;i++) connR16.innerHTML += '<div class="bk-connector-pair"></div>';
 
