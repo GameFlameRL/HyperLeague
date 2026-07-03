@@ -574,18 +574,16 @@ async function loadBracket(){
     const sf  = document.getElementById("bk-sf-matches");
     const fin = document.getElementById("bk-f-matches");
 
-    // R16 - 4 matches in 2 groups of 2
-    [[1,2],[3,4]].forEach(pair => {
+    // R16 - 4 individual match groups (each match is its own group for connector purposes)
+    [1,2,3,4].forEach(i => {
       const grp = document.createElement("div");
       grp.className = "bk-match-group";
-      pair.forEach(i => {
-        const m = rounds.R16[i] || {};
-        grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
-      });
+      const m = rounds.R16[i] || {};
+      grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
       r16.appendChild(grp);
     });
 
-    // QF - 4 matches in 4 groups of 1
+    // QF - 4 individual match groups
     [1,2,3,4].forEach(i => {
       const grp = document.createElement("div");
       grp.className = "bk-match-group";
@@ -594,7 +592,7 @@ async function loadBracket(){
       qf.appendChild(grp);
     });
 
-    // SF - 2 matches
+    // SF - 2 individual match groups
     [1,2].forEach(i => {
       const grp = document.createElement("div");
       grp.className = "bk-match-group";
@@ -620,27 +618,36 @@ function drawConnectors(){
   const bracket = document.getElementById("bk-bracket");
   const bRect = bracket.getBoundingClientRect();
 
+  function getMid(el){
+    const r = el.getBoundingClientRect();
+    return r.top + r.height/2;
+  }
+
   function connectGroups(fromGroups, toGroups, svgId){
     const svg = document.getElementById(svgId);
     const sRect = svg.getBoundingClientRect();
-    svg.setAttribute("viewBox", `0 0 40 ${sRect.height}`);
+    const h = sRect.height;
+    svg.setAttribute("viewBox", `0 0 40 ${h}`);
     svg.setAttribute("width", "40");
-    svg.setAttribute("height", sRect.height);
+    svg.setAttribute("height", h);
     let paths = "";
 
-    const midCount = Math.min(fromGroups.length / 2, toGroups.length);
-    for(let i = 0; i < midCount; i++){
+    const pairs = fromGroups.length / 2;
+    for(let i = 0; i < pairs; i++){
       const g1 = fromGroups[i*2];
       const g2 = fromGroups[i*2+1];
       const to = toGroups[i];
       if(!g1||!g2||!to) continue;
 
-      const y1 = g1.getBoundingClientRect().top + g1.getBoundingClientRect().height/2 - sRect.top;
-      const y2 = g2.getBoundingClientRect().top + g2.getBoundingClientRect().height/2 - sRect.top;
+      const y1   = getMid(g1) - sRect.top;
+      const y2   = getMid(g2) - sRect.top;
       const yMid = (y1+y2)/2;
-      const yTo = to.getBoundingClientRect().top + to.getBoundingClientRect().height/2 - sRect.top;
+      const yTo  = getMid(to) - sRect.top;
 
-      paths += `<path d="M0,${y1} H20 V${yMid} M0,${y2} H20 V${yMid} M20,${yMid} H40" fill="none" stroke="#334155" stroke-width="2"/>`;
+      // horizontal from each match → vertical join → horizontal to next round
+      paths += `<path d="M0,${y1} H20 V${yMid}" fill="none" stroke="#334155" stroke-width="2"/>`;
+      paths += `<path d="M0,${y2} H20 V${yMid}" fill="none" stroke="#334155" stroke-width="2"/>`;
+      paths += `<path d="M20,${yMid} H40" fill="none" stroke="#334155" stroke-width="2"/>`;
     }
     svg.innerHTML = paths;
   }
