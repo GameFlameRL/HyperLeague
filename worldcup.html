@@ -708,7 +708,9 @@ function drawConnectors(){
   const r16Groups = Array.from(document.querySelectorAll("#bk-r16-matches .bk-match-group"));
   // Sort by vertical position to ensure correct pairing
   r16Groups.sort((a,b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-  const qfGroups  = Array.from(document.querySelectorAll("#bk-qf-matches .bk-match-group"));
+  // Use QF half-containers as targets so connectors point to middle of each fixture pair
+  const qfHalves = Array.from(document.querySelectorAll("#bk-qf-matches > div[style]")).filter(el => el.style.flex === "1 1 0%");
+  const qfGroups = qfHalves.length === 2 ? qfHalves : Array.from(document.querySelectorAll("#bk-qf-matches .bk-match-group"));
   qfGroups.sort((a,b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
   const sfGroups  = Array.from(document.querySelectorAll("#bk-sf-matches .bk-match-group"));
   const fGroups   = Array.from(document.querySelectorAll("#bk-f-matches .bk-match-group"));
