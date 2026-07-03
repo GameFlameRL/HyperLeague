@@ -146,6 +146,15 @@ th:last-child, td:last-child{border-right:none;}
 tbody td{border-bottom:1px solid rgba(0,0,0,0.25);}
 tbody tr:last-child td{border-bottom:none;}
 
+.c-gw{width:60px;}
+.c-home{text-align:center;font-weight:700;}
+.c-score{width:80px;font-weight:900;}
+.c-away{text-align:center;font-weight:700;}
+.result-w{color:#4ade80;}
+.result-l{color:#f87171;}
+.result-d{color:#000;}
+.result-tbd{color:#000;}
+
 .loading{
   text-align:center;
   padding:32px;
@@ -164,7 +173,7 @@ tbody tr:last-child td{border-bottom:none;}
     <img src="logo.png" alt="Hyper League Logo">
     <div>
       <h1 id="team-title">—</h1>
-      <div class="subtitle">World Cup · Player Roster</div>
+      <div class="subtitle">World Cup · Fixtures & Results</div>
       <div class="nav">
         <a href="index.html">Overdrive</a>
         <a href="catalyst.html">Catalyst</a>
@@ -178,6 +187,24 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<!-- Fixtures -->
+<div class="tableFrame">
+  <table>
+    <thead>
+      <tr>
+        <th class="c-gw">GW</th>
+        <th colspan="2">OPPONENT</th>
+        <th class="c-score">SCORE</th>
+        <th style="width:70px;white-space:nowrap;">RESULT</th>
+      </tr>
+    </thead>
+    <tbody id="fixtures-body">
+      <tr><td colspan="5" class="loading">Loading fixtures…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Players -->
 <div class="tableFrame">
   <table>
     <thead>
@@ -196,8 +223,9 @@ tbody tr:last-child td{border-bottom:none;}
 </main>
 
 <script>
-const SHEET_ID    = "1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc";
-const PLAYERS_GID = "1229444923";
+const SHEET_ID     = "1ilDa0ZleooN3OBruvtOqF9Ym1CitowFjaLCk1GiYiNc";
+const FIXTURES_GID = "1681527887";
+const PLAYERS_GID  = "1229444923";
 
 const RANK_COLOURS = {
   "Bronze":"#a06b15","Silver":"#a5acb4","Gold":"#f0a009",
@@ -206,23 +234,125 @@ const RANK_COLOURS = {
   "GC2":"#dd1a1a","GC3":"#ff0000","SSL":"#ff00a6"
 };
 
-async function load(){
-  const params = new URLSearchParams(window.location.search);
-  const team = params.get("team") || "";
+const GW_START_ROW = 14;
+const GW_ROW_STEP  = 7;
+const GW_START_COL = 2;
+const GW_COL_STEP  = 5;
+const GW_COLS      = 3;
+const FIXTURE_ROWS = 8;
 
-  if(!team){
-    document.getElementById("team-title").textContent = "No team selected";
+function parseCsv(txt){
+  return txt.trim().replace(/\r/g,"").split("\n").map(row=>{
+    const cells=[];let inQ=false,cell="";
+    for(const ch of row+","){
+      if(ch==='"'){inQ=!inQ;}
+      else if(ch===","&&!inQ){cells.push(cell.trim());cell="";}
+      else{cell+=ch;}
+    }
+    return cells;
+  });
+}
+
+function getCell(grid,row1,col1){
+  const r=grid[row1-1];
+  if(!r)return"";
+  return(r[col1-1]||"").trim();
+}
+
+function parseFixtures(grid, teamName){
+  const fixtures=[];
+  let gwNum=0;
+  for(let rowOff=0;;rowOff+=GW_ROW_STEP){
+    const baseRow=GW_START_ROW+rowOff;
+    let anyGW=false;
+    for(let colOff=0;colOff<GW_COLS*GW_COL_STEP;colOff+=GW_COL_STEP){
+      const header=getCell(grid,baseRow,GW_START_COL+colOff);
+      if(header.toUpperCase().startsWith("GW")){anyGW=true;break;}
+    }
+    if(!anyGW)break;
+    for(let colOff=0;colOff<GW_COLS*GW_COL_STEP;colOff+=GW_COL_STEP){
+      const baseCol=GW_START_COL+colOff;
+      const header=getCell(grid,baseRow,baseCol);
+      if(!header.toUpperCase().startsWith("GW"))continue;
+      gwNum++;
+      for(let f=1;f<=FIXTURE_ROWS;f++){
+        const r=baseRow+f;
+        const home=getCell(grid,r,baseCol);
+        const hs=getCell(grid,r,baseCol+1);
+        const as=getCell(grid,r,baseCol+2);
+        const away=getCell(grid,r,baseCol+3);
+        if(!home&&!away)continue;
+        const involves=home.toLowerCase()===teamName.toLowerCase()
+                    ||away.toLowerCase()===teamName.toLowerCase();
+        if(!involves)continue;
+        const played=hs!==""&&as!=="";
+        const hsD=hs.toLowerCase()==="x"?"0":hs;
+        const asD=as.toLowerCase()==="x"?"0":as;
+        let result="TBD";
+        if(played){
+          const h=hsD.toLowerCase()==="x"?0:parseInt(hsD);
+          const a=asD.toLowerCase()==="x"?0:parseInt(asD);
+          const isHome=home.toLowerCase()===teamName.toLowerCase();
+          if(h===a)result="D";
+          else if((isHome&&h>a)||(!isHome&&a>h))result="W";
+          else result="L";
+        }
+        fixtures.push({gw:gwNum,home,homeScore:hsD,awayScore:asD,away,result,played});
+      }
+    }
+  }
+  return fixtures;
+}
+
+function renderFixtures(fixtures, teamName){
+  const tbody=document.getElementById("fixtures-body");
+  if(!fixtures.length){
+    tbody.innerHTML=`<tr><td colspan="5" class="loading">No fixtures found.</td></tr>`;
     return;
   }
+  tbody.innerHTML=fixtures.map(f=>{
+    const isHome=f.home.toLowerCase()===teamName.toLowerCase();
+    const opponent=isHome?f.away:f.home;
+    const scoreStr=f.played?`${f.homeScore} – ${f.awayScore}`:"vs";
+    const resClass=f.result==="W"?"result-w":f.result==="L"?"result-l":f.result==="D"?"result-d":"result-tbd";
+    return `<tr>
+      <td class="c-gw">${f.gw}</td>
+      <td class="c-home" colspan="2">${opponent}</td>
+      <td class="c-score">${scoreStr}</td>
+      <td class="${resClass}"><strong>${f.result}</strong></td>
+    </tr>`;
+  }).join("");
+}
 
-  document.getElementById("team-title").textContent = decodeURIComponent(team);
+async function load(){
+  const params=new URLSearchParams(window.location.search);
+  const team=params.get("team")||"";
+  if(!team){
+    document.getElementById("team-title").textContent="No team selected";
+    return;
+  }
+  const decoded=decodeURIComponent(team);
+  document.getElementById("team-title").textContent=decoded;
 
+  // Fixtures
   try{
-    const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${PLAYERS_GID}&_ts=${Date.now()}`,{cache:"no-store"});
-    const txt = await res.text();
-    const rows = txt.trim().replace(/\r/g,"").split("\n").slice(1);
+    const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${FIXTURES_GID}&_ts=${Date.now()}`,{cache:"no-store"});
+    const txt=await res.text();
+    const grid=parseCsv(txt);
+    const fixtures=parseFixtures(grid,decoded);
+    renderFixtures(fixtures,decoded);
+  }catch(e){
+    console.error("Fixtures error:",e);
+    document.getElementById("fixtures-body").innerHTML=
+      `<tr><td colspan="5" class="loading">Error loading fixtures.</td></tr>`;
+  }
 
-    const players = rows.map(r=>{
+  // Players
+  try{
+    const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${PLAYERS_GID}&_ts=${Date.now()}`,{cache:"no-store"});
+    const txt=await res.text();
+    const rows=txt.trim().replace(/\r/g,"").split("\n").slice(1);
+    const players=rows.map(r=>{
       const cols=[];let inQ=false,cell="";
       for(const ch of r+","){
         if(ch==='"'){inQ=!inQ;}
@@ -230,24 +360,24 @@ async function load(){
         else{cell+=ch;}
       }
       return cols;
-    }).filter(r=>r[0].toLowerCase()===decodeURIComponent(team).toLowerCase())
+    }).filter(r=>r[0].toLowerCase()===decoded.toLowerCase())
       .map(r=>({name:r[1]||"",rank:(r[2]||"").trim()}));
 
-    const tbody = document.getElementById("players-body");
+    const tbody=document.getElementById("players-body");
     if(players.length){
-      tbody.innerHTML = players.map(p=>{
-        const rankBg = RANK_COLOURS[p.rank] ? "background-color:"+RANK_COLOURS[p.rank]+";" : "";
+      tbody.innerHTML=players.map(p=>{
+        const rankBg=RANK_COLOURS[p.rank]?"background-color:"+RANK_COLOURS[p.rank]+";":"";
         return `<tr>
           <td style="text-align:center;font-weight:900;">${p.name}</td>
           <td style="text-align:center;font-weight:700;white-space:nowrap;${rankBg}">${p.rank}</td>
         </tr>`;
       }).join("");
-    } else {
-      tbody.innerHTML = `<tr><td colspan="2" class="loading">No players found.</td></tr>`;
+    }else{
+      tbody.innerHTML=`<tr><td colspan="2" class="loading">No players found.</td></tr>`;
     }
   }catch(e){
     console.error("Players error:",e);
-    document.getElementById("players-body").innerHTML =
+    document.getElementById("players-body").innerHTML=
       `<tr><td colspan="2" class="loading">Error loading players.</td></tr>`;
   }
 }
