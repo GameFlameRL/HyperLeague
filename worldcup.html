@@ -241,7 +241,7 @@ tbody tr:last-child td{border-bottom:none;}
   flex:1;
   justify-content:center;
   gap:2px;
-  padding:4px 0;
+  padding:6px 0;
 }
 .bk-match{
   display:flex;
@@ -574,14 +574,30 @@ async function loadBracket(){
     const sf  = document.getElementById("bk-sf-matches");
     const fin = document.getElementById("bk-f-matches");
 
-    // R16 - 4 individual match groups (each match is its own group for connector purposes)
-    [1,2,3,4].forEach(i => {
+    // R16 - 4 matches split into 2 visual halves with a spacer between
+    const r16Top = document.createElement("div");
+    r16Top.style.cssText = "display:flex;flex-direction:column;flex:1;";
+    const r16Bot = document.createElement("div");
+    r16Bot.style.cssText = "display:flex;flex-direction:column;flex:1;";
+    const r16Spacer = document.createElement("div");
+    r16Spacer.style.cssText = "flex:0 0 16px;";
+    [1,2].forEach(i => {
       const grp = document.createElement("div");
       grp.className = "bk-match-group";
       const m = rounds.R16[i] || {};
       grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
-      r16.appendChild(grp);
+      r16Top.appendChild(grp);
     });
+    [3,4].forEach(i => {
+      const grp = document.createElement("div");
+      grp.className = "bk-match-group";
+      const m = rounds.R16[i] || {};
+      grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+      r16Bot.appendChild(grp);
+    });
+    r16.appendChild(r16Top);
+    r16.appendChild(r16Spacer);
+    r16.appendChild(r16Bot);
 
     // QF - 4 individual match groups
     [1,2,3,4].forEach(i => {
@@ -609,7 +625,11 @@ async function loadBracket(){
     fin.appendChild(finGrp);
 
     // Draw SVG connectors after DOM is ready
-    requestAnimationFrame(() => drawConnectors());
+    requestAnimationFrame(() => {
+      drawConnectors();
+      // Redraw on resize
+      window.addEventListener("resize", drawConnectors);
+    });
 
   }catch(e){ console.error("Bracket error:",e); }
 }
@@ -653,10 +673,15 @@ function drawConnectors(){
   }
 
   const r16Groups = Array.from(document.querySelectorAll("#bk-r16-matches .bk-match-group"));
+  // Sort by vertical position to ensure correct pairing
+  r16Groups.sort((a,b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
   const qfGroups  = Array.from(document.querySelectorAll("#bk-qf-matches .bk-match-group"));
   const sfGroups  = Array.from(document.querySelectorAll("#bk-sf-matches .bk-match-group"));
   const fGroups   = Array.from(document.querySelectorAll("#bk-f-matches .bk-match-group"));
 
+  // R16: pair [0,1]→QF[0], [2,3]→QF[1], [4,5]→QF[2], [6,7]→QF[3]
+  // but we only have 4 R16 matches so: [0,1]→QF[0], [2,3]→QF[1]
+  // then QF[0,1]→SF[0], QF[2,3]→SF[1], SF[0,1]→Final[0]
   connectGroups(r16Groups, qfGroups, "bk-conn-r16");
   connectGroups(qfGroups,  sfGroups, "bk-conn-qf");
   connectGroups(sfGroups,  fGroups,  "bk-conn-sf");
