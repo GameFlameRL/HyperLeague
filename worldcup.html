@@ -638,6 +638,24 @@ function drawConnectors(){
   const bracket = document.getElementById("bk-bracket");
   const bRect = bracket.getBoundingClientRect();
 
+  function connectOneToOne(fromGroups, toGroups, svgId){
+    const svg = document.getElementById(svgId);
+    const sRect = svg.getBoundingClientRect();
+    const h = sRect.height;
+    svg.setAttribute("viewBox", `0 0 40 ${h}`);
+    svg.setAttribute("width", "40");
+    svg.setAttribute("height", h);
+    let paths = "";
+    fromGroups.forEach((from, i) => {
+      const to = toGroups[i];
+      if(!from||!to) return;
+      const y1 = getMid(from) - sRect.top;
+      const y2 = getMid(to)   - sRect.top;
+      paths += `<path d="M0,${y1} H20 V${y2} H40" fill="none" stroke="#334155" stroke-width="2"/>`;
+    });
+    svg.innerHTML = paths;
+  }
+
   function getMid(el){
     const r = el.getBoundingClientRect();
     return r.top + r.height/2;
@@ -682,9 +700,12 @@ function drawConnectors(){
   // R16: pair [0,1]→QF[0], [2,3]→QF[1], [4,5]→QF[2], [6,7]→QF[3]
   // but we only have 4 R16 matches so: [0,1]→QF[0], [2,3]→QF[1]
   // then QF[0,1]→SF[0], QF[2,3]→SF[1], SF[0,1]→Final[0]
-  connectGroups(r16Groups, qfGroups, "bk-conn-r16");
-  connectGroups(qfGroups,  sfGroups, "bk-conn-qf");
-  connectGroups(sfGroups,  fGroups,  "bk-conn-sf");
+  // R16 → QF: each R16 match connects 1-to-1 with QF slot
+  connectOneToOne(r16Groups, qfGroups, "bk-conn-r16");
+  // QF → SF: pair QF matches
+  connectGroups(qfGroups, sfGroups, "bk-conn-qf");
+  // SF → Final: pair SF matches
+  connectGroups(sfGroups, fGroups,  "bk-conn-sf");
 }
 
 load();
