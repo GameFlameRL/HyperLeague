@@ -208,6 +208,83 @@ tbody tr:last-child td{border-bottom:none;}
   .meta{ text-align:left; white-space:normal; width:100%; }
   h1{ font-size:1.2rem; }
 }
+
+.bk-round{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  flex:1;
+  min-width:140px;
+}
+
+.bk-round-label{
+  text-align:center;
+  font-size:0.72rem;
+  font-weight:900;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:#94a3b8;
+  padding:8px 0 12px;
+}
+
+.bk-matches{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-around;
+  flex:1;
+  gap:8px;
+  padding:0 8px;
+}
+
+.bk-match{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.bk-team{
+  background:#1e2d42;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:6px;
+  padding:7px 10px;
+  font-size:0.8rem;
+  font-weight:700;
+  color:#000;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  min-height:32px;
+  background:#2a3a52;
+}
+
+.bk-team.winner{
+  background:#1e3a1e;
+  border-color:#4ade80;
+  color:#4ade80;
+}
+
+.bk-team.empty{
+  color:#475569;
+  font-weight:400;
+  font-style:italic;
+}
+
+.bk-score{
+  font-size:0.85rem;
+  font-weight:900;
+  color:#fff;
+  margin-left:8px;
+  flex-shrink:0;
+}
+
+.bk-connectors{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-around;
+  width:24px;
+  flex-shrink:0;
+}
+
 </style>
 </head>
 
@@ -299,26 +376,28 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
-<!-- Fixtures -->
-<div class="section-label">Fixtures & Results</div>
-<div class="fixtures-grid">
-  <div class="tableFrame">
-    <div class="gw-label">Gameweek 1</div>
-    <table>
-      <tbody id="gw1-body"><tr><td colspan="3" class="loading">Loading…</td></tr></tbody>
-    </table>
-  </div>
-  <div class="tableFrame">
-    <div class="gw-label">Gameweek 2</div>
-    <table>
-      <tbody id="gw2-body"><tr><td colspan="3" class="loading">Loading…</td></tr></tbody>
-    </table>
-  </div>
-  <div class="tableFrame">
-    <div class="gw-label">Gameweek 3</div>
-    <table>
-      <tbody id="gw3-body"><tr><td colspan="3" class="loading">Loading…</td></tr></tbody>
-    </table>
+<div class="section-label" style="margin-top:16px;">Knockouts</div>
+<div class="tableFrame" style="overflow-x:auto;padding:24px 16px;">
+  <div id="bracket" style="display:flex;gap:0;align-items:center;min-width:600px;">
+    <div class="bk-round" id="bk-r16">
+      <div class="bk-round-label">Round of 16</div>
+      <div class="bk-matches" id="bk-r16-matches"></div>
+    </div>
+    <div class="bk-connectors" id="bk-conn-r16"></div>
+    <div class="bk-round" id="bk-qf">
+      <div class="bk-round-label">Quarter Finals</div>
+      <div class="bk-matches" id="bk-qf-matches"></div>
+    </div>
+    <div class="bk-connectors" id="bk-conn-qf"></div>
+    <div class="bk-round" id="bk-sf">
+      <div class="bk-round-label">Semi Finals</div>
+      <div class="bk-matches" id="bk-sf-matches"></div>
+    </div>
+    <div class="bk-connectors" id="bk-conn-sf"></div>
+    <div class="bk-round" id="bk-f">
+      <div class="bk-round-label">Grand Final</div>
+      <div class="bk-matches" id="bk-f-matches"></div>
+    </div>
   </div>
 </div>
 
@@ -454,24 +533,73 @@ async function load(){
     renderGroup(grid,23,1,"group-d");
   }catch(e){console.error("Groups error:",e);}
 
-  // Load fixtures
-  try{
-    const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${FIXTURES_GID}&_ts=${Date.now()}`,{cache:"no-store"});
-    const txt=await res.text();
-    console.log("Fixtures CSV first 300 chars:", txt.substring(0,300));
-    const grid=parseCsv(txt);
-    // GW1 at B14 = row 14, col 2
-    renderGW(grid,14,2,"gw1-body");
-    // GW2 at G14 = row 14, col 7
-    renderGW(grid,14,7,"gw2-body");
-    // GW3 at L14 = row 14, col 12
-    renderGW(grid,14,12,"gw3-body");
-  }catch(e){console.error("Fixtures error:",e);}
-
   document.getElementById("last-updated").textContent=new Date().toLocaleString();
 }
 
+const KNOCKOUTS_GID = "273933869";
+
+function renderMatch(t1, s1, s2, t2){
+  const played = s1 !== "" && s2 !== "";
+  const hs = parseInt(s1) || 0;
+  const as = parseInt(s2) || 0;
+  const t1win = played && hs > as;
+  const t2win = played && as > hs;
+  const t1cls = !t1 ? "bk-team empty" : t1win ? "bk-team winner" : "bk-team";
+  const t2cls = !t2 ? "bk-team empty" : t2win ? "bk-team winner" : "bk-team";
+  const t1score = played ? `<span class="bk-score">${s1}</span>` : "";
+  const t2score = played ? `<span class="bk-score">${s2}</span>` : "";
+  return `<div class="bk-match">
+    <div class="${t1cls}">${t1||"TBD"}${t1score}</div>
+    <div class="${t2cls}">${t2||"TBD"}${t2score}</div>
+  </div>`;
+}
+
+async function loadBracket(){
+  try{
+    const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${KNOCKOUTS_GID}&_ts=${Date.now()}`,{cache:"no-store"});
+    const txt = await res.text();
+    const rows = parseCsv(txt).slice(1).filter(r => r[0]);
+
+    const rounds = {R16:{}, QF:{}, SF:{}, Final:{}};
+    for(const r of rows){
+      const round = r[0].trim();
+      const match = r[1].trim();
+      const t1 = (r[2]||"").trim();
+      const s1 = (r[3]||"").trim();
+      const s2 = (r[4]||"").trim();
+      const t2 = (r[5]||"").trim();
+      if(rounds[round]) rounds[round][match] = {t1,s1,s2,t2};
+    }
+
+    const r16 = document.getElementById("bk-r16-matches");
+    const qf  = document.getElementById("bk-qf-matches");
+    const sf  = document.getElementById("bk-sf-matches");
+    const fin = document.getElementById("bk-f-matches");
+
+    r16.style.gap = "24px";
+    qf.style.gap  = "80px";
+    sf.style.gap  = "168px";
+
+    [1,2,3,4].forEach(i => {
+      const m = rounds.R16[i] || {};
+      r16.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+    });
+    [1,2,3,4].forEach(i => {
+      const m = rounds.QF[i] || {};
+      qf.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+    });
+    [1,2].forEach(i => {
+      const m = rounds.SF[i] || {};
+      sf.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+    });
+    const finm = rounds.Final[1] || {};
+    fin.innerHTML += renderMatch(finm.t1||"",finm.s1||"",finm.s2||"",finm.t2||"");
+
+  }catch(e){ console.error("Bracket error:",e); }
+}
+
 load();
+loadBracket();
 </script>
 
 </body>
