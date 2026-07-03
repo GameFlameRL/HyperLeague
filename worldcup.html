@@ -680,12 +680,16 @@ function drawConnectors(){
       const y1   = getMid(g1) - sRect.top;
       const y2   = getMid(g2) - sRect.top;
       const yMid = (y1+y2)/2;
-      const yTo  = getMid(to) - sRect.top;
 
-      // horizontal from each match → vertical join → horizontal to next round
+      // Connect to the second team box (TBD slot) of the target match
+      const teams = to.querySelectorAll(".bk-team");
+      const targetEl = teams.length >= 2 ? teams[1] : to;
+      const tRect = targetEl.getBoundingClientRect();
+      const yTo = tRect.top + tRect.height/2 - sRect.top;
+
       paths += `<path d="M0,${y1} H20 V${yMid}" fill="none" stroke="#334155" stroke-width="2"/>`;
       paths += `<path d="M0,${y2} H20 V${yMid}" fill="none" stroke="#334155" stroke-width="2"/>`;
-      paths += `<path d="M20,${yMid} H40" fill="none" stroke="#334155" stroke-width="2"/>`;
+      paths += `<path d="M20,${yMid} V${yTo} H40" fill="none" stroke="#334155" stroke-width="2"/>`;
     }
     svg.innerHTML = paths;
   }
@@ -700,8 +704,8 @@ function drawConnectors(){
   // R16: pair [0,1]→QF[0], [2,3]→QF[1], [4,5]→QF[2], [6,7]→QF[3]
   // but we only have 4 R16 matches so: [0,1]→QF[0], [2,3]→QF[1]
   // then QF[0,1]→SF[0], QF[2,3]→SF[1], SF[0,1]→Final[0]
-  // R16 → QF: each R16 match connects 1-to-1 with QF slot
-  connectOneToOne(r16Groups, qfGroups, "bk-conn-r16");
+  // R16 → QF: pair R16 matches
+  connectGroups(r16Groups, qfGroups, "bk-conn-r16");
   // QF → SF: pair QF matches
   connectGroups(qfGroups, sfGroups, "bk-conn-qf");
   // SF → Final: pair SF matches
