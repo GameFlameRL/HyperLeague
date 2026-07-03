@@ -210,17 +210,15 @@ tbody tr:last-child td{border-bottom:none;}
 }
 
 .bk-bracket{
-  display:flex;
+  display:grid;
+  grid-template-columns:1fr 40px 1fr 40px 1fr 40px 1fr;
   align-items:stretch;
-  gap:0;
   min-width:700px;
   padding:16px 0;
 }
 .bk-round{
   display:flex;
   flex-direction:column;
-  flex:1;
-  min-width:150px;
 }
 .bk-round-label{
   text-align:center;
@@ -235,9 +233,15 @@ tbody tr:last-child td{border-bottom:none;}
   display:flex;
   flex-direction:column;
   flex:1;
-  justify-content:space-around;
   padding:0 8px;
-  gap:16px;
+}
+.bk-match-group{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  justify-content:center;
+  gap:2px;
+  padding:4px 0;
 }
 .bk-match{
   display:flex;
@@ -274,37 +278,9 @@ tbody tr:last-child td{border-bottom:none;}
   margin-left:8px;
   flex-shrink:0;
 }
-.bk-connector{
-  display:flex;
-  flex-direction:column;
-  flex:0 0 24px;
-  justify-content:space-around;
-}
-.bk-connector-pair{
-  display:flex;
-  flex-direction:column;
-  flex:1;
-  position:relative;
-}
-.bk-connector-pair::before{
-  content:'';
-  position:absolute;
-  right:0;
-  top:25%;
-  height:50%;
-  width:50%;
-  border-top:2px solid #334155;
-  border-right:2px solid #334155;
-  border-bottom:2px solid #334155;
-}
-.bk-connector-pair::after{
-  content:'';
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translateY(-50%);
-  width:50%;
-  border-top:2px solid #334155;
+.bk-svg-connector{
+  width:40px;
+  overflow:visible;
 }
 
 </style>
@@ -400,22 +376,22 @@ tbody tr:last-child td{border-bottom:none;}
 
 <div class="section-label" style="margin-top:16px;">Knockouts</div>
 <div class="tableFrame" style="overflow-x:auto;padding:24px 16px;">
-  <div class="bk-bracket">
+  <div class="bk-bracket" id="bk-bracket">
     <div class="bk-round">
       <div class="bk-round-label">Round of 16</div>
       <div class="bk-matches" id="bk-r16-matches"></div>
     </div>
-    <div class="bk-connector" id="bk-conn-r16"></div>
+    <svg class="bk-svg-connector" id="bk-conn-r16" preserveAspectRatio="none"></svg>
     <div class="bk-round">
       <div class="bk-round-label">Quarter Finals</div>
       <div class="bk-matches" id="bk-qf-matches"></div>
     </div>
-    <div class="bk-connector" id="bk-conn-qf"></div>
+    <svg class="bk-svg-connector" id="bk-conn-qf" preserveAspectRatio="none"></svg>
     <div class="bk-round">
       <div class="bk-round-label">Semi Finals</div>
       <div class="bk-matches" id="bk-sf-matches"></div>
     </div>
-    <div class="bk-connector" id="bk-conn-sf"></div>
+    <svg class="bk-svg-connector" id="bk-conn-sf" preserveAspectRatio="none"></svg>
     <div class="bk-round">
       <div class="bk-round-label">Grand Final</div>
       <div class="bk-matches" id="bk-f-matches"></div>
@@ -598,42 +574,85 @@ async function loadBracket(){
     const sf  = document.getElementById("bk-sf-matches");
     const fin = document.getElementById("bk-f-matches");
 
-    // R16: group matches into pairs with a gap between pairs
+    // R16 - 4 matches in 2 groups of 2
     [[1,2],[3,4]].forEach(pair => {
-      r16.innerHTML += '<div style="display:flex;flex-direction:column;gap:2px;flex:1;">';
+      const grp = document.createElement("div");
+      grp.className = "bk-match-group";
       pair.forEach(i => {
         const m = rounds.R16[i] || {};
-        r16.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+        grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
       });
-      r16.innerHTML += '</div>';
+      r16.appendChild(grp);
     });
 
-    // R16 connectors - 2 pairs
-    const connR16 = document.getElementById("bk-conn-r16");
-    for(let i=0;i<2;i++) connR16.innerHTML += '<div class="bk-connector-pair"></div>';
-
+    // QF - 4 matches in 4 groups of 1
     [1,2,3,4].forEach(i => {
+      const grp = document.createElement("div");
+      grp.className = "bk-match-group";
       const m = rounds.QF[i] || {};
-      qf.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+      grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+      qf.appendChild(grp);
     });
 
-    // QF connectors - 2 pairs (each pair covers 2 matches)
-    const connQF = document.getElementById("bk-conn-qf");
-    for(let i=0;i<2;i++) connQF.innerHTML += '<div class="bk-connector-pair"></div>';
-
+    // SF - 2 matches
     [1,2].forEach(i => {
+      const grp = document.createElement("div");
+      grp.className = "bk-match-group";
       const m = rounds.SF[i] || {};
-      sf.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+      grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+      sf.appendChild(grp);
     });
 
-    // SF connectors - 1 pair
-    const connSF = document.getElementById("bk-conn-sf");
-    connSF.innerHTML += '<div class="bk-connector-pair"></div>';
-
+    // Final
+    const finGrp = document.createElement("div");
+    finGrp.className = "bk-match-group";
     const finm = rounds.Final[1] || {};
-    fin.innerHTML += renderMatch(finm.t1||"",finm.s1||"",finm.s2||"",finm.t2||"");
+    finGrp.innerHTML += renderMatch(finm.t1||"",finm.s1||"",finm.s2||"",finm.t2||"");
+    fin.appendChild(finGrp);
+
+    // Draw SVG connectors after DOM is ready
+    requestAnimationFrame(() => drawConnectors());
 
   }catch(e){ console.error("Bracket error:",e); }
+}
+
+function drawConnectors(){
+  const bracket = document.getElementById("bk-bracket");
+  const bRect = bracket.getBoundingClientRect();
+
+  function connectGroups(fromGroups, toGroups, svgId){
+    const svg = document.getElementById(svgId);
+    const sRect = svg.getBoundingClientRect();
+    svg.setAttribute("viewBox", `0 0 40 ${sRect.height}`);
+    svg.setAttribute("width", "40");
+    svg.setAttribute("height", sRect.height);
+    let paths = "";
+
+    const midCount = Math.min(fromGroups.length / 2, toGroups.length);
+    for(let i = 0; i < midCount; i++){
+      const g1 = fromGroups[i*2];
+      const g2 = fromGroups[i*2+1];
+      const to = toGroups[i];
+      if(!g1||!g2||!to) continue;
+
+      const y1 = g1.getBoundingClientRect().top + g1.getBoundingClientRect().height/2 - sRect.top;
+      const y2 = g2.getBoundingClientRect().top + g2.getBoundingClientRect().height/2 - sRect.top;
+      const yMid = (y1+y2)/2;
+      const yTo = to.getBoundingClientRect().top + to.getBoundingClientRect().height/2 - sRect.top;
+
+      paths += `<path d="M0,${y1} H20 V${yMid} M0,${y2} H20 V${yMid} M20,${yMid} H40" fill="none" stroke="#334155" stroke-width="2"/>`;
+    }
+    svg.innerHTML = paths;
+  }
+
+  const r16Groups = Array.from(document.querySelectorAll("#bk-r16-matches .bk-match-group"));
+  const qfGroups  = Array.from(document.querySelectorAll("#bk-qf-matches .bk-match-group"));
+  const sfGroups  = Array.from(document.querySelectorAll("#bk-sf-matches .bk-match-group"));
+  const fGroups   = Array.from(document.querySelectorAll("#bk-f-matches .bk-match-group"));
+
+  connectGroups(r16Groups, qfGroups, "bk-conn-r16");
+  connectGroups(qfGroups,  sfGroups, "bk-conn-qf");
+  connectGroups(sfGroups,  fGroups,  "bk-conn-sf");
 }
 
 load();
