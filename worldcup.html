@@ -599,14 +599,30 @@ async function loadBracket(){
     r16.appendChild(r16Spacer);
     r16.appendChild(r16Bot);
 
-    // QF - 4 individual match groups
-    [1,2,3,4].forEach(i => {
+    // QF - 4 matches split into 2 halves with a spacer
+    const qfTop = document.createElement("div");
+    qfTop.style.cssText = "display:flex;flex-direction:column;flex:1;";
+    const qfBot = document.createElement("div");
+    qfBot.style.cssText = "display:flex;flex-direction:column;flex:1;";
+    const qfSpacer = document.createElement("div");
+    qfSpacer.style.cssText = "flex:0 0 16px;";
+    [1,2].forEach(i => {
       const grp = document.createElement("div");
       grp.className = "bk-match-group";
       const m = rounds.QF[i] || {};
       grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
-      qf.appendChild(grp);
+      qfTop.appendChild(grp);
     });
+    [3,4].forEach(i => {
+      const grp = document.createElement("div");
+      grp.className = "bk-match-group";
+      const m = rounds.QF[i] || {};
+      grp.innerHTML += renderMatch(m.t1||"",m.s1||"",m.s2||"",m.t2||"");
+      qfBot.appendChild(grp);
+    });
+    qf.appendChild(qfTop);
+    qf.appendChild(qfSpacer);
+    qf.appendChild(qfBot);
 
     // SF - 2 individual match groups
     [1,2].forEach(i => {
@@ -680,12 +696,7 @@ function drawConnectors(){
       const y1   = getMid(g1) - sRect.top;
       const y2   = getMid(g2) - sRect.top;
       const yMid = (y1+y2)/2;
-
-      // Connect to the second team box (TBD slot) of the target match
-      const teams = to.querySelectorAll(".bk-team");
-      const targetEl = teams.length >= 2 ? teams[1] : to;
-      const tRect = targetEl.getBoundingClientRect();
-      const yTo = tRect.top + tRect.height/2 - sRect.top;
+      const yTo  = getMid(to) - sRect.top;
 
       paths += `<path d="M0,${y1} H20 V${yMid}" fill="none" stroke="#334155" stroke-width="2"/>`;
       paths += `<path d="M0,${y2} H20 V${yMid}" fill="none" stroke="#334155" stroke-width="2"/>`;
@@ -698,6 +709,7 @@ function drawConnectors(){
   // Sort by vertical position to ensure correct pairing
   r16Groups.sort((a,b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
   const qfGroups  = Array.from(document.querySelectorAll("#bk-qf-matches .bk-match-group"));
+  qfGroups.sort((a,b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
   const sfGroups  = Array.from(document.querySelectorAll("#bk-sf-matches .bk-match-group"));
   const fGroups   = Array.from(document.querySelectorAll("#bk-f-matches .bk-match-group"));
 
